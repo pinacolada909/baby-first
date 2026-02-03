@@ -26,13 +26,13 @@ export function SignUpForm({ onSuccess }: SignUpFormProps) {
     try {
       const { error } = await signUp(email, password, displayName)
       if (error) {
-        toast.error(t('auth.error.generic'))
+        toast.error(error.message || t('auth.error.generic'))
       } else {
         toast.success(t('auth.signUp.success'))
         onSuccess()
       }
-    } catch {
-      toast.error(t('auth.error.generic'))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('auth.error.generic'))
     } finally {
       setLoading(false)
     }
