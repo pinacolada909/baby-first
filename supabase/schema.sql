@@ -443,7 +443,36 @@ END;
 $$;
 
 -- ============================================================
--- 7. REALTIME
+-- 7. RPC: create_baby_with_caregiver
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.create_baby_with_caregiver(
+  _name TEXT,
+  _birth_date DATE DEFAULT NULL,
+  _display_name TEXT DEFAULT 'Parent'
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  _baby_id UUID;
+  _user_id UUID := auth.uid();
+BEGIN
+  INSERT INTO public.babies (name, birth_date)
+  VALUES (_name, _birth_date)
+  RETURNING id INTO _baby_id;
+
+  INSERT INTO public.baby_caregivers (baby_id, user_id, role, display_name)
+  VALUES (_baby_id, _user_id, 'primary', _display_name);
+
+  RETURN _baby_id;
+END;
+$$;
+
+-- ============================================================
+-- 8. REALTIME
 -- ============================================================
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.sleep_sessions;

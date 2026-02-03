@@ -8,23 +8,13 @@ export function useCreateBaby() {
   const { user } = useAuth()
   return useMutation({
     mutationFn: async ({ name, birthDate }: { name: string; birthDate?: string }) => {
-      const { data: baby, error: babyError } = await supabase
-        .from('babies')
-        .insert({ name, birth_date: birthDate || null })
-        .select()
-        .single()
-      if (babyError) throw babyError
-
-      const { error: cgError } = await supabase
-        .from('baby_caregivers')
-        .insert({
-          baby_id: baby.id,
-          user_id: user!.id,
-          role: 'primary',
-          display_name: user!.user_metadata?.display_name || 'Parent',
-        })
-      if (cgError) throw cgError
-      return baby
+      const { data, error } = await supabase.rpc('create_baby_with_caregiver', {
+        _name: name,
+        _birth_date: birthDate || null,
+        _display_name: user?.user_metadata?.display_name || 'Parent',
+      })
+      if (error) throw error
+      return data as string // returns the baby UUID
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.babies.all(user!.id) })
