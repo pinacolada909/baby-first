@@ -23,7 +23,7 @@ function formatDatetimeLocal(date: Date): string {
 }
 
 const TASK_TYPES: TaskType[] = ['change_diapers', 'feeding', 'cooking', 'cleaning', 'laundry', 'doctor_visit', 'shopping']
-const COLORS = ['#7c3aed', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6']
+const _COLORS = ['#7c3aed', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6']
 
 interface DemoCaregiver {
   id: string
@@ -32,7 +32,7 @@ interface DemoCaregiver {
 
 export function TimeManagementPage() {
   const { t } = useLanguage()
-  const { user, isDemo } = useAuth()
+  const { isDemo } = useAuth()
   const { selectedBaby } = useBaby()
   const babyId = isDemo ? undefined : selectedBaby?.id
 

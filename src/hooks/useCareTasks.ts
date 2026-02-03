@@ -40,7 +40,7 @@ export function useAddCareTask() {
 export function useToggleTask() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, babyId, completed }: { id: string; babyId: string; completed: boolean }) => {
+    mutationFn: async ({ id, completed }: { id: string; babyId: string; completed: boolean }) => {
       const { data, error } = await supabase
         .from('care_tasks')
         .update({
