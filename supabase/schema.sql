@@ -1,0 +1,453 @@
+-- ============================================================
+-- BabyFirst - Complete Supabase Database Schema
+-- ============================================================
+
+-- ============================================================
+-- 1. TABLES (created first so functions can reference them)
+-- ============================================================
+
+-- ---- profiles ----
+CREATE TABLE public.profiles (
+  id           UUID PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
+  display_name TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- ---- babies ----
+CREATE TABLE public.babies (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       TEXT NOT NULL,
+  birth_date DATE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.babies ENABLE ROW LEVEL SECURITY;
+
+-- ---- baby_caregivers ----
+CREATE TABLE public.baby_caregivers (
+  baby_id      UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  user_id      UUID NOT NULL REFERENCES auth.users  ON DELETE CASCADE,
+  role         TEXT NOT NULL CHECK (role IN ('primary', 'member')),
+  display_name TEXT,
+  joined_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (baby_id, user_id)
+);
+
+ALTER TABLE public.baby_caregivers ENABLE ROW LEVEL SECURITY;
+
+-- ---- baby_invites ----
+CREATE TABLE public.baby_invites (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id    UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  code       CHAR(6) NOT NULL UNIQUE,
+  created_by UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT now() + INTERVAL '7 days',
+  used_by    UUID REFERENCES auth.users ON DELETE SET NULL,
+  used_at    TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.baby_invites ENABLE ROW LEVEL SECURITY;
+
+-- ---- sleep_sessions ----
+CREATE TABLE public.sleep_sessions (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id        UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id   UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  start_time     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  end_time       TIMESTAMPTZ,
+  duration_hours DOUBLE PRECISION,
+  notes          TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.sleep_sessions ENABLE ROW LEVEL SECURITY;
+
+-- ---- diaper_changes ----
+CREATE TABLE public.diaper_changes (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id      UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  changed_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status       TEXT NOT NULL CHECK (status IN ('wet', 'dirty', 'mixed', 'dry')),
+  notes        TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.diaper_changes ENABLE ROW LEVEL SECURITY;
+
+-- ---- feedings ----
+CREATE TABLE public.feedings (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id          UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id     UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  fed_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  feeding_type     TEXT NOT NULL CHECK (feeding_type IN ('breastmilk', 'formula', 'ready_to_feed')),
+  volume_ml        INT,
+  duration_minutes INT,
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.feedings ENABLE ROW LEVEL SECURITY;
+
+-- ---- time_blocks ----
+CREATE TABLE public.time_blocks (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id      UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  block_type   TEXT NOT NULL CHECK (block_type IN ('care', 'rest')),
+  start_time   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  end_time     TIMESTAMPTZ,
+  notes        TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.time_blocks ENABLE ROW LEVEL SECURITY;
+
+-- ---- care_tasks ----
+CREATE TABLE public.care_tasks (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id      UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  task_type    TEXT NOT NULL CHECK (task_type IN (
+                  'change_diapers', 'feeding', 'cooking',
+                  'cleaning', 'laundry', 'doctor_visit', 'shopping'
+               )),
+  completed    BOOLEAN NOT NULL DEFAULT false,
+  assigned_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at TIMESTAMPTZ,
+  notes        TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.care_tasks ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- 2. HELPER FUNCTIONS (tables exist now, safe to reference)
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.is_baby_caregiver(_baby_id UUID, _user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.baby_caregivers
+    WHERE baby_id = _baby_id
+      AND user_id = _user_id
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_primary_caregiver(_baby_id UUID, _user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.baby_caregivers
+    WHERE baby_id = _baby_id
+      AND user_id = _user_id
+      AND role = 'primary'
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.shares_baby_with(_profile_user_id UUID, _viewer_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.baby_caregivers a
+    JOIN public.baby_caregivers b ON a.baby_id = b.baby_id
+    WHERE a.user_id = _profile_user_id
+      AND b.user_id = _viewer_id
+  );
+$$;
+
+-- ============================================================
+-- 3. ROW-LEVEL SECURITY POLICIES
+-- ============================================================
+
+-- ---- profiles policies ----
+CREATE POLICY "profiles_select"
+  ON public.profiles FOR SELECT
+  TO authenticated
+  USING (
+    id = auth.uid()
+    OR public.shares_baby_with(id, auth.uid())
+  );
+
+CREATE POLICY "profiles_update"
+  ON public.profiles FOR UPDATE
+  TO authenticated
+  USING  (id = auth.uid())
+  WITH CHECK (id = auth.uid());
+
+-- ---- babies policies ----
+CREATE POLICY "babies_select"
+  ON public.babies FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(id, auth.uid()));
+
+CREATE POLICY "babies_insert"
+  ON public.babies FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "babies_update"
+  ON public.babies FOR UPDATE
+  TO authenticated
+  USING  (public.is_primary_caregiver(id, auth.uid()))
+  WITH CHECK (public.is_primary_caregiver(id, auth.uid()));
+
+CREATE POLICY "babies_delete"
+  ON public.babies FOR DELETE
+  TO authenticated
+  USING (public.is_primary_caregiver(id, auth.uid()));
+
+-- ---- baby_caregivers policies ----
+CREATE POLICY "baby_caregivers_select"
+  ON public.baby_caregivers FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "baby_caregivers_insert"
+  ON public.baby_caregivers FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "baby_caregivers_delete"
+  ON public.baby_caregivers FOR DELETE
+  TO authenticated
+  USING (public.is_primary_caregiver(baby_id, auth.uid()));
+
+-- ---- baby_invites policies ----
+CREATE POLICY "baby_invites_select"
+  ON public.baby_invites FOR SELECT
+  TO authenticated
+  USING (public.is_primary_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "baby_invites_insert"
+  ON public.baby_invites FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_primary_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "baby_invites_update_redeem"
+  ON public.baby_invites FOR UPDATE
+  TO authenticated
+  USING  (used_by IS NULL AND expires_at > now())
+  WITH CHECK (used_by = auth.uid());
+
+-- ---- sleep_sessions policies ----
+CREATE POLICY "sleep_sessions_select"
+  ON public.sleep_sessions FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "sleep_sessions_insert"
+  ON public.sleep_sessions FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "sleep_sessions_delete"
+  ON public.sleep_sessions FOR DELETE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+-- ---- diaper_changes policies ----
+CREATE POLICY "diaper_changes_select"
+  ON public.diaper_changes FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "diaper_changes_insert"
+  ON public.diaper_changes FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "diaper_changes_delete"
+  ON public.diaper_changes FOR DELETE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+-- ---- feedings policies ----
+CREATE POLICY "feedings_select"
+  ON public.feedings FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "feedings_insert"
+  ON public.feedings FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "feedings_delete"
+  ON public.feedings FOR DELETE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+-- ---- time_blocks policies ----
+CREATE POLICY "time_blocks_select"
+  ON public.time_blocks FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "time_blocks_insert"
+  ON public.time_blocks FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "time_blocks_delete"
+  ON public.time_blocks FOR DELETE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+-- ---- care_tasks policies ----
+CREATE POLICY "care_tasks_select"
+  ON public.care_tasks FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "care_tasks_insert"
+  ON public.care_tasks FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "care_tasks_update"
+  ON public.care_tasks FOR UPDATE
+  TO authenticated
+  USING  (public.is_baby_caregiver(baby_id, auth.uid()))
+  WITH CHECK (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "care_tasks_delete"
+  ON public.care_tasks FOR DELETE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+-- ============================================================
+-- 4. INDEXES
+-- ============================================================
+
+CREATE INDEX idx_sleep_sessions_baby_id    ON public.sleep_sessions (baby_id);
+CREATE INDEX idx_sleep_sessions_start_time ON public.sleep_sessions (start_time);
+
+CREATE INDEX idx_diaper_changes_baby_id    ON public.diaper_changes (baby_id);
+CREATE INDEX idx_diaper_changes_changed_at ON public.diaper_changes (changed_at);
+
+CREATE INDEX idx_feedings_baby_id ON public.feedings (baby_id);
+CREATE INDEX idx_feedings_fed_at  ON public.feedings (fed_at);
+
+CREATE INDEX idx_time_blocks_baby_id    ON public.time_blocks (baby_id);
+CREATE INDEX idx_time_blocks_start_time ON public.time_blocks (start_time);
+
+CREATE INDEX idx_care_tasks_baby_id     ON public.care_tasks (baby_id);
+CREATE INDEX idx_care_tasks_assigned_at ON public.care_tasks (assigned_at);
+
+-- ============================================================
+-- 5. TRIGGER: auto-create profile on auth.users insert
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, display_name)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data ->> 'display_name', NEW.email)
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================================
+-- 6. RPC: redeem_invite
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.redeem_invite(_code TEXT, _display_name TEXT)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  _invite   RECORD;
+  _baby_id  UUID;
+  _user_id  UUID := auth.uid();
+BEGIN
+  -- Validate the invite code
+  SELECT *
+    INTO _invite
+    FROM public.baby_invites
+   WHERE code = _code
+     AND used_by IS NULL
+     AND expires_at > now()
+   FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Invalid or expired invite code';
+  END IF;
+
+  _baby_id := _invite.baby_id;
+
+  -- Prevent duplicate membership
+  IF public.is_baby_caregiver(_baby_id, _user_id) THEN
+    RAISE EXCEPTION 'You are already a caregiver for this baby';
+  END IF;
+
+  -- Mark the invite as used
+  UPDATE public.baby_invites
+     SET used_by = _user_id,
+         used_at = now()
+   WHERE id = _invite.id;
+
+  -- Create the caregiver junction row
+  INSERT INTO public.baby_caregivers (baby_id, user_id, role, display_name)
+  VALUES (_baby_id, _user_id, 'member', _display_name);
+
+  RETURN _baby_id;
+END;
+$$;
+
+-- ============================================================
+-- 7. REALTIME
+-- ============================================================
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.sleep_sessions;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.diaper_changes;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.feedings;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.time_blocks;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.care_tasks;
