@@ -9,9 +9,10 @@ import { toast } from 'sonner'
 
 interface SignInFormProps {
   onSuccess: () => void
+  onForgotPassword: () => void
 }
 
-export function SignInForm({ onSuccess }: SignInFormProps) {
+export function SignInForm({ onSuccess, onForgotPassword }: SignInFormProps) {
   const { t } = useLanguage()
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
@@ -51,7 +52,16 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-password">{t('auth.password')}</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="signin-password">{t('auth.password')}</Label>
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
+          >
+            {t('auth.forgotPassword')}
+          </button>
+        </div>
         <Input
           id="signin-password"
           type="password"

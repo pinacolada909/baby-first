@@ -23,6 +23,12 @@ export const zh: Record<TranslationKey, string> = {
   'auth.signOut.success': '已退出登录',
   'auth.error.invalid': '邮箱或密码无效',
   'auth.error.generic': '发生错误，请重试。',
+  'auth.forgotPassword': '忘记密码？',
+  'auth.forgotPassword.title': '重置密码',
+  'auth.forgotPassword.description': '输入你的邮箱，我们将发送重置链接',
+  'auth.forgotPassword.submit': '发送重置链接',
+  'auth.forgotPassword.success': '请查看邮箱中的重置链接',
+  'auth.forgotPassword.backToSignIn': '返回登录',
 
   // Home
   'home.hero.title': '自信地迎接育儿之旅',

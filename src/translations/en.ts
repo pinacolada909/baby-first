@@ -21,6 +21,12 @@ export const en = {
   'auth.signOut.success': 'Signed out successfully',
   'auth.error.invalid': 'Invalid email or password',
   'auth.error.generic': 'An error occurred. Please try again.',
+  'auth.forgotPassword': 'Forgot Password?',
+  'auth.forgotPassword.title': 'Reset Password',
+  'auth.forgotPassword.description': 'Enter your email and we\'ll send you a reset link',
+  'auth.forgotPassword.submit': 'Send Reset Link',
+  'auth.forgotPassword.success': 'Check your email for the reset link',
+  'auth.forgotPassword.backToSignIn': 'Back to Sign In',
 
   // Home
   'home.hero.title': 'Navigate Early Parenthood with Confidence',
