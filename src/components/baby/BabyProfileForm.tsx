@@ -28,8 +28,10 @@ export function BabyProfileForm({ open, onOpenChange }: BabyProfileFormProps) {
       setName('')
       setBirthDate('')
       onOpenChange(false)
-    } catch {
-      toast.error(t('common.error'))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('common.error')
+      toast.error(message)
+      console.error('Create baby error:', err)
     }
   }
 
