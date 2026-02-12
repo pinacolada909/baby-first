@@ -17,6 +17,7 @@ import { Clock, Trash2, AlertTriangle, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'
 import { CaregiverManager } from '@/components/baby/CaregiverManager'
+import { EmailSettings } from '@/components/settings/EmailSettings'
 
 function formatDatetimeLocal(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -377,6 +378,9 @@ export function TimeManagementPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Email Settings */}
+      {!isDemo && <EmailSettings />}
     </div>
   )
 }

@@ -214,6 +214,15 @@ export const en = {
   'caregiver.removed': 'Caregiver removed',
   'caregiver.remove': 'Remove',
 
+  // Email Settings
+  'email.title': 'Email Notifications',
+  'email.dailySummary': 'Daily Summary Email',
+  'email.dailySummaryDesc': 'Receive a daily summary of sleep, feeding, and diaper data at 8pm PST',
+  'email.sendTo': 'Emails will be sent to',
+  'email.sendTime': 'Sent daily at 8:00 PM PST with CSV attachments',
+  'email.enabled': 'Daily summary email enabled',
+  'email.disabled': 'Daily summary email disabled',
+
   // Common
   'common.save': 'Save',
   'common.cancel': 'Cancel',

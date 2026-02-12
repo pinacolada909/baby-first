@@ -216,6 +216,15 @@ export const zh: Record<TranslationKey, string> = {
   'caregiver.removed': '照护者已移除',
   'caregiver.remove': '移除',
 
+  // Email Settings
+  'email.title': '邮件通知',
+  'email.dailySummary': '每日总结邮件',
+  'email.dailySummaryDesc': '每天晚上8点（太平洋时间）收到睡眠、喂养和尿布数据的每日总结',
+  'email.sendTo': '邮件将发送至',
+  'email.sendTime': '每天晚上8点（太平洋时间）发送，附带CSV文件',
+  'email.enabled': '每日总结邮件已启用',
+  'email.disabled': '每日总结邮件已禁用',
+
   // Common
   'common.save': '保存',
   'common.cancel': '取消',
