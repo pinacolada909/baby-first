@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Clock, Trash2, AlertTriangle, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'
+import { CaregiverManager } from '@/components/baby/CaregiverManager'
 
 function formatDatetimeLocal(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -207,7 +208,7 @@ export function TimeManagementPage() {
       )}
 
       {/* Caregivers */}
-      {isDemo && (
+      {isDemo ? (
         <Card>
           <CardContent className="space-y-3 p-6">
             <h2 className="text-lg font-semibold">{t('time.caregivers')}</h2>
@@ -225,6 +226,8 @@ export function TimeManagementPage() {
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <CaregiverManager />
       )}
 
       {/* Time Blocks */}
