@@ -190,7 +190,7 @@ export function SleepTrackerPage() {
                   <BarChart data={chartData}>
                     <XAxis dataKey="label" fontSize={12} />
                     <YAxis allowDecimals={false} domain={[0, 'auto']} />
-                    <Tooltip formatter={(value: number) => [`${value} ${t('sleep.hours')}`, t('sleep.total')]} />
+                    <Tooltip />
                     <ReferenceLine y={14} stroke="#22c55e" strokeDasharray="3 3" label={{ value: '14h', position: 'right', fontSize: 10 }} />
                     <Bar
                       dataKey="hours"
