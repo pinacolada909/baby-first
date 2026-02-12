@@ -33,9 +33,6 @@ export function CaregiverManager() {
     (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary'
   )
 
-  // Debug: log caregivers data
-  console.log('CaregiverManager - user:', user?.id, 'caregivers:', caregivers, 'isPrimary:', isPrimary)
-
   const activeInvite = invites.find(
     (i) => !i.used_by && new Date(i.expires_at) > new Date()
   )
