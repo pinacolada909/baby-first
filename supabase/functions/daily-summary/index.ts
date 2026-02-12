@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'https://esm.sh/resend@2'
+// btoa is available globally in Deno
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -117,7 +118,8 @@ Deno.serve(async (req) => {
           results.push({ userId: pref.user_id, success: false, error: 'User email not found' })
           continue
         }
-        const userEmail = userData.user.email
+        // TODO: Remove override once a custom domain is verified in Resend
+        const userEmail = 'tjiang995@gmail.com' // userData.user.email
 
         // Get user's babies
         const { data: caregivers, error: cgError } = await supabase
@@ -206,15 +208,15 @@ Deno.serve(async (req) => {
           attachments: [
             {
               filename: 'sleep_summary.csv',
-              content: Buffer.from(sleepCSV).toString('base64'),
+              content: btoa(sleepCSV),
             },
             {
               filename: 'diaper_summary.csv',
-              content: Buffer.from(diaperCSV).toString('base64'),
+              content: btoa(diaperCSV),
             },
             {
               filename: 'feeding_summary.csv',
-              content: Buffer.from(feedingCSV).toString('base64'),
+              content: btoa(feedingCSV),
             },
           ],
         })
