@@ -93,6 +93,7 @@ export const zh: Record<TranslationKey, string> = {
   'sleep.total': '总计',
   'sleep.history': '睡眠历史',
   'sleep.empty': '暂无睡眠记录',
+  'sleep.analytics': '睡眠分析',
   'sleep.tips.title': '睡眠小贴士',
   'sleep.tips.1': '新生儿每天睡14-17小时',
   'sleep.tips.2': '睡眠时保持房间暗淡安静',

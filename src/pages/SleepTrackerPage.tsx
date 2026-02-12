@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Moon, Trash2, Lightbulb } from 'lucide-react'
 import { toast } from 'sonner'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 function formatDatetimeLocal(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -47,6 +49,7 @@ export function SleepTrackerPage() {
   const [startTime, setStartTime] = useState(formatDatetimeLocal(oneHourAgo))
   const [endTime, setEndTime] = useState(formatDatetimeLocal(now))
   const [notes, setNotes] = useState('')
+  const [period, setPeriod] = useState('week')
 
   const duration = useMemo(() => {
     const start = new Date(startTime)
@@ -61,6 +64,38 @@ export function SleepTrackerPage() {
       .filter((s) => isToday(s.start_time))
       .reduce((sum, s) => sum + s.duration_hours, 0)
   }, [sessions])
+
+  const chartData = useMemo(() => {
+    const now = new Date()
+    let days: number
+    if (period === 'week') {
+      days = 7
+    } else {
+      days = 30
+    }
+
+    // Create buckets for each day
+    const buckets: Record<string, { label: string; hours: number; date: Date }> = {}
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 86400000)
+      const label = `${date.getMonth() + 1}/${date.getDate()}`
+      buckets[label] = { label, hours: 0, date }
+    }
+
+    // Sum sleep hours per day
+    sessions.forEach((s) => {
+      const d = new Date(s.start_time)
+      const label = `${d.getMonth() + 1}/${d.getDate()}`
+      if (buckets[label]) {
+        buckets[label].hours += s.duration_hours
+      }
+    })
+
+    // Sort by date and return
+    return Object.values(buckets)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map(({ label, hours }) => ({ label, hours: Math.round(hours * 10) / 10 }))
+  }, [sessions, period])
 
   const handleAdd = async () => {
     const session = {
@@ -137,6 +172,39 @@ export function SleepTrackerPage() {
           <Button onClick={handleAdd} disabled={duration <= 0}>
             {t('sleep.add')}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Analytics */}
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="mb-4 text-lg font-semibold">{t('sleep.analytics')}</h2>
+          <Tabs value={period} onValueChange={setPeriod}>
+            <TabsList>
+              <TabsTrigger value="week">{t('feeding.period.week')}</TabsTrigger>
+              <TabsTrigger value="month">{t('feeding.period.month')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value={period}>
+              {chartData.some(d => d.hours > 0) ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="label" fontSize={12} />
+                    <YAxis allowDecimals={false} domain={[0, 'auto']} />
+                    <Tooltip formatter={(value: number) => [`${value} ${t('sleep.hours')}`, t('sleep.total')]} />
+                    <ReferenceLine y={14} stroke="#22c55e" strokeDasharray="3 3" label={{ value: '14h', position: 'right', fontSize: 10 }} />
+                    <Bar
+                      dataKey="hours"
+                      fill="#8b5cf6"
+                      name={`${t('sleep.total')} (${t('sleep.hours')})`}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="py-8 text-center text-muted-foreground">{t('common.noData')}</p>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

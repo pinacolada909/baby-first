@@ -91,6 +91,7 @@ export const en = {
   'sleep.total': 'Total',
   'sleep.history': 'Sleep History',
   'sleep.empty': 'No sleep sessions logged yet',
+  'sleep.analytics': 'Sleep Analytics',
   'sleep.tips.title': 'Sleep Tips',
   'sleep.tips.1': 'Newborns sleep 14-17 hours per day',
   'sleep.tips.2': 'Keep the room dark and quiet during sleep',
