@@ -41,33 +41,25 @@ export function BabySelector() {
 
     setSubmitting(true)
     try {
-      const { data: baby, error: babyError } = await supabase
-        .from('babies')
-        .insert({ name: babyName.trim(), birth_date: birthDate || null })
-        .select()
-        .single()
+      const { data: babyId, error } = await supabase.rpc('create_baby_with_caregiver', {
+        _name: babyName.trim(),
+        _birth_date: birthDate || null,
+        _display_name: user.user_metadata?.display_name ?? user.email ?? 'Parent',
+      })
 
-      if (babyError) throw babyError
-
-      const { error: linkError } = await supabase
-        .from('baby_caregivers')
-        .insert({
-          baby_id: baby.id,
-          user_id: user.id,
-          role: 'primary',
-          display_name: user.user_metadata?.display_name ?? user.email ?? '',
-        })
-
-      if (linkError) throw linkError
+      if (error) throw error
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.babies.all(user.id) })
-      setSelectedBaby(baby)
+      // Set the newly created baby as selected
+      setSelectedBaby({ id: babyId, name: babyName.trim(), birth_date: birthDate || null, created_at: new Date().toISOString() })
       toast.success(t('baby.created'))
       setDialogOpen(false)
       setBabyName('')
       setBirthDate('')
-    } catch {
-      toast.error(t('common.error'))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('common.error')
+      toast.error(message)
+      console.error('Create baby error:', err)
     } finally {
       setSubmitting(false)
     }
