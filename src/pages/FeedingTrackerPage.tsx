@@ -72,22 +72,16 @@ export function FeedingTrackerPage() {
       startDate = new Date(now.getTime() - 30 * 86400000)
     }
     const filtered = feedings.filter((f) => new Date(f.fed_at) >= startDate)
-    const buckets: Record<string, { label: string; breastmilk: number; formula: number; ready_to_feed: number }> = {}
+    const buckets: Record<string, { label: string; volume: number }> = {}
 
     filtered.forEach((f) => {
       const d = new Date(f.fed_at)
       const label = period === 'day'
         ? `${d.getHours()}:00`
         : `${d.getMonth() + 1}/${d.getDate()}`
-      if (!buckets[label]) buckets[label] = { label, breastmilk: 0, formula: 0, ready_to_feed: 0 }
-      // For breastmilk, show duration in minutes; for formula/ready_to_feed, show volume in mL
-      if (f.feeding_type === 'breastmilk') {
-        buckets[label].breastmilk += f.duration_minutes ?? 0
-      } else if (f.feeding_type === 'formula') {
-        buckets[label].formula += f.volume_ml ?? 0
-      } else {
-        buckets[label].ready_to_feed += f.volume_ml ?? 0
-      }
+      if (!buckets[label]) buckets[label] = { label, volume: 0 }
+      // Sum volume in mL
+      buckets[label].volume += f.volume_ml ?? 0
     })
     // Sort by time - for day view, sort numerically by hour
     return Object.values(buckets).sort((a, b) => {
@@ -192,15 +186,14 @@ export function FeedingTrackerPage() {
               ))}
             </div>
           </div>
-          {feedingType === 'breastmilk' ? (
+          <div>
+            <Label>{t('feeding.volume')}</Label>
+            <Input type="number" value={volume} onChange={(e) => setVolume(e.target.value)} placeholder="120" />
+          </div>
+          {feedingType === 'breastmilk' && (
             <div>
               <Label>{t('feeding.duration')}</Label>
               <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="15" />
-            </div>
-          ) : (
-            <div>
-              <Label>{t('feeding.volume')}</Label>
-              <Input type="number" value={volume} onChange={(e) => setVolume(e.target.value)} placeholder="120" />
             </div>
           )}
           <div>
@@ -226,12 +219,10 @@ export function FeedingTrackerPage() {
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={chartData}>
                     <XAxis dataKey="label" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="breastmilk" fill="#ec4899" name={`${t('feeding.type.breastmilk')} (${t('feeding.min')})`} />
-                    <Bar dataKey="formula" fill="#3b82f6" name={`${t('feeding.type.formula')} (${t('feeding.ml')})`} />
-                    <Bar dataKey="ready_to_feed" fill="#22c55e" name={`${t('feeding.type.ready_to_feed')} (${t('feeding.ml')})`} />
+                    <Bar dataKey="volume" fill="#f97316" name={`${t('feeding.total')} (${t('feeding.ml')})`} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
