@@ -89,10 +89,10 @@ export function CaregiverManager() {
 
         {/* Caregiver List */}
         <div className="space-y-2">
-          {caregivers.map((c: BabyCaregiver & { profiles: { display_name: string } | null }) => (
+          {caregivers.map((c: BabyCaregiver) => (
             <div key={c.user_id} className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-2">
-                <span className="font-medium">{c.profiles?.display_name ?? c.display_name}</span>
+                <span className="font-medium">{c.display_name}</span>
                 <Badge variant={c.role === 'primary' ? 'default' : 'outline'}>
                   {c.role === 'primary' ? t('caregiver.role.primary') : t('caregiver.role.member')}
                 </Badge>

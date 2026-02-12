@@ -57,9 +57,8 @@ export function TimeManagementPage() {
 
   const caregiverList = isDemo
     ? demoCaregivers.map((c) => ({ user_id: c.id, display_name: c.name, role: 'primary' as const, baby_id: '', joined_at: '' }))
-    : dbCaregivers.map((c: BabyCaregiver & { profiles: { display_name: string } | null }) => ({
+    : dbCaregivers.map((c: BabyCaregiver) => ({
       ...c,
-      display_name: c.profiles?.display_name ?? c.display_name,
     }))
   const blocks = isDemo ? demoBlocks : dbBlocks
   const tasks = isDemo ? demoTasks : dbTasks

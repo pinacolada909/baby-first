@@ -9,10 +9,10 @@ export function useCaregivers(babyId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('baby_caregivers')
-        .select('*, profiles:user_id(display_name)')
+        .select('*')
         .eq('baby_id', babyId!)
       if (error) throw error
-      return data as (BabyCaregiver & { profiles: { display_name: string } | null })[]
+      return data as BabyCaregiver[]
     },
     enabled: !!babyId,
   })
