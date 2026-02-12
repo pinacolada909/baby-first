@@ -27,6 +27,14 @@ export const en = {
   'auth.forgotPassword.submit': 'Send Reset Link',
   'auth.forgotPassword.success': 'Check your email for the reset link',
   'auth.forgotPassword.backToSignIn': 'Back to Sign In',
+  'auth.updatePassword.title': 'Set New Password',
+  'auth.updatePassword.description': 'Enter your new password below',
+  'auth.updatePassword.new': 'New Password',
+  'auth.updatePassword.confirm': 'Confirm Password',
+  'auth.updatePassword.submit': 'Update Password',
+  'auth.updatePassword.success': 'Password updated successfully',
+  'auth.updatePassword.mismatch': 'Passwords do not match',
+  'auth.updatePassword.tooShort': 'Password must be at least 6 characters',
 
   // Home
   'home.hero.title': 'Navigate Early Parenthood with Confidence',

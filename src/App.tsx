@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { BabyProvider } from '@/contexts/BabyContext'
 import { Toaster } from '@/components/ui/sonner'
 import { Layout } from '@/components/layout/Layout'
+import { UpdatePasswordModal } from '@/components/auth/UpdatePasswordModal'
 import { HomePage } from '@/pages/HomePage'
 import { QuestionsPage } from '@/pages/QuestionsPage'
 import { SleepTrackerPage } from '@/pages/SleepTrackerPage'
@@ -40,6 +41,7 @@ export default function App() {
               </Routes>
             </BrowserRouter>
             <Toaster richColors position="top-right" />
+            <UpdatePasswordModal />
           </BabyProvider>
         </AuthProvider>
       </LanguageProvider>

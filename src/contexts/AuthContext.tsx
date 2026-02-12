@@ -10,7 +10,10 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   resetPasswordRequest: (email: string) => Promise<{ error: Error | null }>
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>
   isDemo: boolean
+  isPasswordRecovery: boolean
+  clearPasswordRecovery: () => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -19,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -28,9 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
+        // Detect password recovery flow
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true)
+        }
       }
     )
 
@@ -67,11 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? new Error(error.message) : null }
   }
 
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (!error) {
+      setIsPasswordRecovery(false)
+    }
+    return { error: error ? new Error(error.message) : null }
+  }
+
+  const clearPasswordRecovery = () => {
+    setIsPasswordRecovery(false)
+  }
+
   return (
     <AuthContext.Provider value={{
       user, session, loading,
-      signIn, signUp, signOut, resetPasswordRequest,
-      isDemo: !user
+      signIn, signUp, signOut, resetPasswordRequest, updatePassword,
+      isDemo: !user,
+      isPasswordRecovery, clearPasswordRecovery
     }}>
       {children}
     </AuthContext.Provider>

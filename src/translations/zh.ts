@@ -29,6 +29,14 @@ export const zh: Record<TranslationKey, string> = {
   'auth.forgotPassword.submit': '发送重置链接',
   'auth.forgotPassword.success': '请查看邮箱中的重置链接',
   'auth.forgotPassword.backToSignIn': '返回登录',
+  'auth.updatePassword.title': '设置新密码',
+  'auth.updatePassword.description': '请在下方输入新密码',
+  'auth.updatePassword.new': '新密码',
+  'auth.updatePassword.confirm': '确认密码',
+  'auth.updatePassword.submit': '更新密码',
+  'auth.updatePassword.success': '密码更新成功',
+  'auth.updatePassword.mismatch': '两次密码不一致',
+  'auth.updatePassword.tooShort': '密码至少需要6个字符',
 
   // Home
   'home.hero.title': '自信地迎接育儿之旅',
