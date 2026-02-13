@@ -11,6 +11,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Copy, Link, UserPlus, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { sanitizeErrorMessage } from '@/lib/utils'
@@ -29,6 +37,7 @@ export function CaregiverManager() {
 
   const [inviteCode, setInviteCode] = useState('')
   const [joinName, setJoinName] = useState('')
+  const [pendingRemoveUserId, setPendingRemoveUserId] = useState<string | null>(null)
 
   const isPrimary = caregivers.some(
     (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary'
@@ -78,15 +87,21 @@ export function CaregiverManager() {
     }
   }
 
-  const handleRemove = async (userId: string) => {
-    if (!babyId) return
+  const handleConfirmRemove = async () => {
+    if (!babyId || !pendingRemoveUserId) return
     try {
-      await removeCaregiver.mutateAsync({ babyId, userId })
+      await removeCaregiver.mutateAsync({ babyId, userId: pendingRemoveUserId })
       toast.success(t('caregiver.removed'))
     } catch {
       toast.error(t('common.error'))
+    } finally {
+      setPendingRemoveUserId(null)
     }
   }
+
+  const pendingCaregiver = caregivers.find(
+    (c: BabyCaregiver) => c.user_id === pendingRemoveUserId
+  )
 
   if (!babyId) return null
 
@@ -109,7 +124,7 @@ export function CaregiverManager() {
                 </Badge>
               </div>
               {isPrimary && c.user_id !== user?.id && (
-                <Button variant="ghost" size="sm" onClick={() => handleRemove(c.user_id)}>
+                <Button variant="ghost" size="sm" onClick={() => setPendingRemoveUserId(c.user_id)}>
                   {t('caregiver.remove')}
                 </Button>
               )}
@@ -186,6 +201,30 @@ export function CaregiverManager() {
           </div>
         </div>
       </CardContent>
+
+      {/* Remove Confirmation Dialog */}
+      <Dialog open={!!pendingRemoveUserId} onOpenChange={(open) => { if (!open) setPendingRemoveUserId(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('caregiver.remove.confirm.title')}</DialogTitle>
+            <DialogDescription>
+              {t('caregiver.remove.confirm.desc').replace('{name}', pendingCaregiver?.display_name ?? '')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingRemoveUserId(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmRemove}
+              disabled={removeCaregiver.isPending}
+            >
+              {t('caregiver.remove.confirm.button')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

@@ -221,6 +221,9 @@ export const en = {
   'caregiver.joined': 'Successfully joined!',
   'caregiver.removed': 'Caregiver removed',
   'caregiver.remove': 'Remove',
+  'caregiver.remove.confirm.title': 'Remove Caregiver',
+  'caregiver.remove.confirm.desc': 'Are you sure you want to remove {name}? They will lose access to this baby\'s data.',
+  'caregiver.remove.confirm.button': 'Remove',
 
   // Join Page
   'join.title': 'Join a Baby',

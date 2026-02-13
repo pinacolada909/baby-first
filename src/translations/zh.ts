@@ -223,6 +223,9 @@ export const zh: Record<TranslationKey, string> = {
   'caregiver.joined': '成功加入！',
   'caregiver.removed': '照护者已移除',
   'caregiver.remove': '移除',
+  'caregiver.remove.confirm.title': '移除照护者',
+  'caregiver.remove.confirm.desc': '确定要移除 {name} 吗？他们将无法访问该宝宝的数据。',
+  'caregiver.remove.confirm.button': '移除',
 
   // Join Page
   'join.title': '加入宝宝',
