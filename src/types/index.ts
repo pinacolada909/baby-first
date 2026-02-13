@@ -14,6 +14,16 @@ export type TaskType =
   | 'laundry'
   | 'doctor_visit'
   | 'shopping'
+  | 'bathing'
+  | 'sterilizing'
+  | 'playtime'
+  | 'other'
+
+/** Household task types shown in the dashboard UI (excludes auto-tracked baby care) */
+export const HOUSEHOLD_TASK_TYPES: TaskType[] = [
+  'cooking', 'cleaning', 'laundry', 'doctor_visit',
+  'shopping', 'bathing', 'sterilizing', 'playtime', 'other',
+]
 
 export type TimeBlockType = 'care' | 'rest'
 

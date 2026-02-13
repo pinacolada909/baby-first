@@ -49,7 +49,6 @@ export function EmailSettings() {
           </div>
 
           <div className="text-sm text-muted-foreground">
-            <p>{t('email.sendTo')}: <span className="font-medium">{user.email}</span></p>
             <p>{t('email.sendTime')}</p>
           </div>
         </div>
