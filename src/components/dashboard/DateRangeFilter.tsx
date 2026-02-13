@@ -25,7 +25,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
           onClick={() => onChange(range)}
           className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
             value === range
-              ? 'bg-white text-purple-700 shadow-sm'
+              ? 'bg-white text-purple-600 shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >

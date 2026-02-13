@@ -93,7 +93,7 @@ export function BabySelector() {
             <DropdownMenuItem
               key={baby.id}
               onClick={() => setSelectedBaby(baby)}
-              className={selectedBaby?.id === baby.id ? 'bg-purple-50 text-purple-700' : ''}
+              className={selectedBaby?.id === baby.id ? 'bg-purple-50 text-purple-600' : ''}
             >
               {baby.name}
             </DropdownMenuItem>

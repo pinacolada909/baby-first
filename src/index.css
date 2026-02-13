@@ -38,25 +38,25 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #faf5ff;
+  --background: #fefce8;
   --foreground: #1a1a2e;
   --card: #ffffff;
   --card-foreground: #1a1a2e;
   --popover: #ffffff;
   --popover-foreground: #1a1a2e;
-  --primary: #7c3aed;
+  --primary: #a855f7;
   --primary-foreground: #ffffff;
   --secondary: #10b981;
   --secondary-foreground: #ffffff;
-  --muted: #f3e8ff;
+  --muted: #fef3c7;
   --muted-foreground: #6b7280;
   --accent: #f59e0b;
   --accent-foreground: #1a1a2e;
   --destructive: #ef4444;
   --border: #e5e7eb;
   --input: #e5e7eb;
-  --ring: #7c3aed;
-  --chart-1: #7c3aed;
+  --ring: #a855f7;
+  --chart-1: #a855f7;
   --chart-2: #10b981;
   --chart-3: #f59e0b;
   --chart-4: #3b82f6;

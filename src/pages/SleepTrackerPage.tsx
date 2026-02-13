@@ -194,7 +194,7 @@ export function SleepTrackerPage() {
                     <ReferenceLine y={14} stroke="#22c55e" strokeDasharray="3 3" label={{ value: '14h', position: 'right', fontSize: 10 }} />
                     <Bar
                       dataKey="hours"
-                      fill="#8b5cf6"
+                      fill="#a855f7"
                       name={`${t('sleep.total')} (${t('sleep.hours')})`}
                       radius={[4, 4, 0, 0]}
                     />
