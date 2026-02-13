@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePendingSignupAction } from '@/hooks/usePendingSignupAction'
 import { Navigation } from './Navigation'
 import { DemoBanner } from '@/components/auth/DemoBanner'
 import { AuthModal } from '@/components/auth/AuthModal'
@@ -8,6 +9,7 @@ import { AuthModal } from '@/components/auth/AuthModal'
 export function Layout() {
   const { isDemo } = useAuth()
   const [authOpen, setAuthOpen] = useState(false)
+  usePendingSignupAction()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">

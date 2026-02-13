@@ -35,6 +35,13 @@ export const en = {
   'auth.updatePassword.success': 'Password updated successfully',
   'auth.updatePassword.mismatch': 'Passwords do not match',
   'auth.updatePassword.tooShort': 'Password must be at least 6 characters',
+  'auth.signUp.role.newBaby': 'New Baby',
+  'auth.signUp.role.joinExisting': 'Join Existing Baby',
+  'auth.signUp.babyName': 'Baby Name',
+  'auth.signUp.inviteCode': 'Invite Code',
+  'auth.signUp.confirmEmail': 'Account created! Check your email. Your setup will complete automatically when you sign in.',
+  'auth.signUp.babyCreated': 'Welcome! Your baby profile has been created.',
+  'auth.signUp.inviteRedeemed': 'Welcome! You\'ve joined the baby\'s care team.',
 
   // Home
   'home.hero.title': 'Navigate Early Parenthood with Confidence',

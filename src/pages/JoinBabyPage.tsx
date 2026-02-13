@@ -80,7 +80,11 @@ export function JoinBabyPage() {
                   <SignInForm onSuccess={() => {}} onForgotPassword={() => setAuthView('forgotPassword')} />
                 </TabsContent>
                 <TabsContent value="signUp" className="mt-4">
-                  <SignUpForm onSuccess={() => {}} />
+                  <SignUpForm
+                    onSuccess={() => {}}
+                    defaultRole="join_existing"
+                    defaultInviteCode={inviteCode}
+                  />
                 </TabsContent>
               </Tabs>
             )}

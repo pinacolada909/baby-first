@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null; confirmationRequired?: boolean }>
   signOut: () => Promise<void>
   resetPasswordRequest: (email: string) => Promise<{ error: Error | null }>
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) return { error: new Error(error.message) }
     // Supabase returns a user with no session when email confirmation is required
     if (data.user && !data.session) {
-      return { error: new Error('Check your email for a confirmation link, then sign in.') }
+      return { error: null, confirmationRequired: true }
     }
     return { error: null }
   }

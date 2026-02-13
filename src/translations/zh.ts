@@ -37,6 +37,13 @@ export const zh: Record<TranslationKey, string> = {
   'auth.updatePassword.success': '密码更新成功',
   'auth.updatePassword.mismatch': '两次密码不一致',
   'auth.updatePassword.tooShort': '密码至少需要6个字符',
+  'auth.signUp.role.newBaby': '新宝宝',
+  'auth.signUp.role.joinExisting': '加入已有宝宝',
+  'auth.signUp.babyName': '宝宝名字',
+  'auth.signUp.inviteCode': '邀请码',
+  'auth.signUp.confirmEmail': '账号已创建！请查看邮箱。登录后将自动完成设置。',
+  'auth.signUp.babyCreated': '欢迎！宝宝档案已创建。',
+  'auth.signUp.inviteRedeemed': '欢迎！你已加入宝宝的照护团队。',
 
   // Home
   'home.hero.title': '自信地迎接育儿之旅',
