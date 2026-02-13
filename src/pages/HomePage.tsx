@@ -9,6 +9,8 @@ import {
   Baby,
   Utensils,
   Clock,
+  Mail,
+  Paperclip,
 } from 'lucide-react'
 
 const FEATURES = [
@@ -142,6 +144,40 @@ export function HomePage() {
             )
           })}
         </div>
+      </section>
+
+      {/* Daily Summary Email Preview */}
+      <section className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold">{t('home.email.title')}</h2>
+          <p className="mt-2 text-muted-foreground">
+            {t('home.email.subtitle')}
+          </p>
+        </div>
+        <Card className="mx-auto max-w-lg overflow-hidden">
+          <div className="flex items-center gap-2 border-b bg-muted/50 px-4 py-3">
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{t('home.email.sample.subject')}</span>
+          </div>
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-3 py-2 dark:bg-indigo-950/30">
+              <Moon className="h-4 w-4 text-indigo-500" />
+              <span className="text-sm">{t('home.email.sample.sleep')}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-2 dark:bg-orange-950/30">
+              <Utensils className="h-4 w-4 text-orange-500" />
+              <span className="text-sm">{t('home.email.sample.feeding')}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 dark:bg-green-950/30">
+              <Baby className="h-4 w-4 text-green-500" />
+              <span className="text-sm">{t('home.email.sample.diaper')}</span>
+            </div>
+            <div className="flex items-center gap-1 pt-1 text-xs text-muted-foreground">
+              <Paperclip className="h-3 w-3" />
+              <span>{t('home.email.sample.attachment')}</span>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       {/* CTA Section */}
