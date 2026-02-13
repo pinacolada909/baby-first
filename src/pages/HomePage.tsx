@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLayoutContext } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -54,6 +55,7 @@ const FEATURES = [
 export function HomePage() {
   const { t } = useLanguage()
   const { isDemo } = useAuth()
+  const { onOpenAuth } = useLayoutContext()
   const navigate = useNavigate()
 
   return (
@@ -70,7 +72,7 @@ export function HomePage() {
           size="lg"
           variant="secondary"
           className="mt-8"
-          onClick={() => navigate(isDemo ? '/questions' : '/sleep-tracker')}
+          onClick={() => isDemo ? onOpenAuth() : navigate('/sleep-tracker')}
         >
           {t('home.hero.cta')}
         </Button>
@@ -190,7 +192,7 @@ export function HomePage() {
           <Button
             className="mt-6"
             size="lg"
-            onClick={() => navigate('/questions')}
+            onClick={onOpenAuth}
           >
             {t('home.cta.button')}
           </Button>
