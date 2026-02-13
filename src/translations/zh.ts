@@ -208,6 +208,8 @@ export const zh: Record<TranslationKey, string> = {
   'caregiver.invite.expires': '过期时间',
   'caregiver.invite.copy': '复制邀请码',
   'caregiver.invite.copied': '已复制！',
+  'caregiver.invite.copyLink': '复制邀请链接',
+  'caregiver.invite.linkCopied': '邀请链接已复制！',
   'caregiver.join': '使用邀请码加入',
   'caregiver.join.code': '输入6位邀请码',
   'caregiver.join.name': '你的显示名称',
@@ -215,6 +217,12 @@ export const zh: Record<TranslationKey, string> = {
   'caregiver.joined': '成功加入！',
   'caregiver.removed': '照护者已移除',
   'caregiver.remove': '移除',
+
+  // Join Page
+  'join.title': '加入宝宝',
+  'join.subtitle': '输入邀请码，一起照顾宝宝',
+  'join.signInFirst': '请先登录或注册账号，然后输入邀请码。',
+  'join.withCode': '使用邀请码加入',
 
   // Email Settings
   'email.title': '邮件通知',

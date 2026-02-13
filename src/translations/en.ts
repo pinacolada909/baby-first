@@ -206,6 +206,8 @@ export const en = {
   'caregiver.invite.expires': 'Expires',
   'caregiver.invite.copy': 'Copy Code',
   'caregiver.invite.copied': 'Code copied!',
+  'caregiver.invite.copyLink': 'Copy Invite Link',
+  'caregiver.invite.linkCopied': 'Invite link copied!',
   'caregiver.join': 'Join with Code',
   'caregiver.join.code': 'Enter 6-character code',
   'caregiver.join.name': 'Your Display Name',
@@ -213,6 +215,12 @@ export const en = {
   'caregiver.joined': 'Successfully joined!',
   'caregiver.removed': 'Caregiver removed',
   'caregiver.remove': 'Remove',
+
+  // Join Page
+  'join.title': 'Join a Baby',
+  'join.subtitle': 'Enter an invite code to start caring together',
+  'join.signInFirst': 'Sign in or create an account first, then enter your invite code.',
+  'join.withCode': 'Join with Code',
 
   // Email Settings
   'email.title': 'Email Notifications',

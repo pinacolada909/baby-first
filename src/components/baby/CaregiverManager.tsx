@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Copy, UserPlus, Users } from 'lucide-react'
+import { Copy, Link, UserPlus, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function CaregiverManager() {
@@ -50,6 +50,12 @@ export function CaregiverManager() {
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code)
     toast.success(t('caregiver.invite.copied'))
+  }
+
+  const handleCopyLink = (code: string) => {
+    const link = `${window.location.origin}/join?code=${code}`
+    navigator.clipboard.writeText(link)
+    toast.success(t('caregiver.invite.linkCopied'))
   }
 
   const handleJoin = async () => {
@@ -110,16 +116,27 @@ export function CaregiverManager() {
           <div className="space-y-3">
             <h3 className="text-sm font-medium">{t('caregiver.invite')}</h3>
             {activeInvite ? (
-              <div className="flex items-center gap-2">
-                <code className="rounded bg-muted px-3 py-2 text-lg font-mono tracking-wider">
-                  {activeInvite.code}
-                </code>
-                <Button variant="outline" size="icon" onClick={() => handleCopyCode(activeInvite.code)}>
-                  <Copy className="h-4 w-4" />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <code className="rounded bg-muted px-3 py-2 text-lg font-mono tracking-wider">
+                    {activeInvite.code}
+                  </code>
+                  <Button variant="outline" size="icon" onClick={() => handleCopyCode(activeInvite.code)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    {t('caregiver.invite.expires')}: {new Date(activeInvite.expires_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleCopyLink(activeInvite.code)}
+                >
+                  <Link className="mr-2 h-4 w-4" />
+                  {t('caregiver.invite.copyLink')}
                 </Button>
-                <span className="text-xs text-muted-foreground">
-                  {t('caregiver.invite.expires')}: {new Date(activeInvite.expires_at).toLocaleDateString()}
-                </span>
               </div>
             ) : (
               <Button variant="outline" onClick={handleGenerateInvite} disabled={createInvite.isPending}>

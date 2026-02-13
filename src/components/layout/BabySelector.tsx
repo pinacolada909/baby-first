@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Baby, ChevronDown, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Baby, ChevronDown, Plus, UserPlus } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,7 @@ export function BabySelector() {
   const { selectedBaby, setSelectedBaby, babies, isLoading } = useBaby()
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [babyName, setBabyName] = useState('')
   const [birthDate, setBirthDate] = useState('')
@@ -100,6 +102,10 @@ export function BabySelector() {
           <DropdownMenuItem onClick={() => setDialogOpen(true)}>
             <Plus className="size-4" />
             {t('baby.add')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/join')}>
+            <UserPlus className="size-4" />
+            {t('join.withCode')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
