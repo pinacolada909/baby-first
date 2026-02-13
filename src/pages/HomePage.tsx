@@ -9,7 +9,6 @@ import {
   Baby,
   Utensils,
   Clock,
-  BookOpen,
 } from 'lucide-react'
 
 const FEATURES = [
@@ -47,13 +46,6 @@ const FEATURES = [
     icon: Clock,
     route: '/time-management',
     color: 'text-purple-500',
-  },
-  {
-    titleKey: 'feature.questions.title' as const,
-    descKey: 'feature.questions.desc' as const,
-    icon: BookOpen,
-    route: '/questions',
-    color: 'text-pink-500',
   },
 ]
 
