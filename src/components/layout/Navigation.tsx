@@ -46,10 +46,10 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
   }
 
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 border-b border-white/20 bg-white/80 backdrop-blur-md">
+    <nav className="fixed top-0 right-0 left-0 z-50 border-b border-slate-100 bg-[#fdfcf8]/80 backdrop-blur-md">
       <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         {/* Left: App name */}
-        <NavLink to="/" className="text-lg font-bold text-purple-600">
+        <NavLink to="/" className="text-lg font-bold tracking-tight text-[#a78bfa]">
           BabyFirst
         </NavLink>
 
@@ -63,8 +63,8 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
               className={({ isActive }) =>
                 `flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-purple-100 text-purple-600'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-violet-100 text-[#a78bfa]'
+                    : 'text-slate-500 hover:text-[#a78bfa] hover:bg-slate-50'
                 }`
               }
             >
@@ -80,7 +80,7 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
           <LanguageSelector />
 
           {isDemo ? (
-            <Button size="sm" className="rounded-full bg-emerald-500 text-white hover:bg-emerald-600" onClick={onOpenAuth}>
+            <Button size="sm" className="rounded-full bg-[#a78bfa] text-white shadow-md shadow-[#a78bfa]/20 hover:opacity-90" onClick={onOpenAuth}>
               <LogIn className="size-4" />
               <span className="hidden sm:inline">{t('auth.signIn')}</span>
             </Button>

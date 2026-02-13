@@ -136,9 +136,9 @@ export function SleepTrackerPage() {
       </div>
 
       {/* Today's Summary */}
-      <Card className="border-purple-200 bg-purple-50">
+      <Card className="border-[#ddd6fe] bg-violet-50">
         <CardContent className="flex items-center gap-4 p-6">
-          <Moon className="h-8 w-8 text-purple-500" />
+          <Moon className="h-8 w-8 text-[#a78bfa]" />
           <div>
             <p className="text-sm font-medium text-muted-foreground">{t('sleep.today')}</p>
             <p className={`text-2xl font-bold ${todayTotal >= 14 ? 'text-green-600' : todayTotal >= 12 ? 'text-amber-600' : 'text-red-600'}`}>
@@ -194,7 +194,7 @@ export function SleepTrackerPage() {
                     <ReferenceLine y={14} stroke="#22c55e" strokeDasharray="3 3" label={{ value: '14h', position: 'right', fontSize: 10 }} />
                     <Bar
                       dataKey="hours"
-                      fill="#a855f7"
+                      fill="#a78bfa"
                       name={`${t('sleep.total')} (${t('sleep.hours')})`}
                       radius={[4, 4, 0, 0]}
                     />
