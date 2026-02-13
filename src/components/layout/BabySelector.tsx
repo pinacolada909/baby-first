@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useQueryClient } from '@tanstack/react-query'
@@ -59,9 +60,8 @@ export function BabySelector() {
       setBabyName('')
       setBirthDate('')
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('common.error')
+      const message = err instanceof Error ? sanitizeErrorMessage(err.message) : t('common.error')
       toast.error(message)
-      console.error('Create baby error:', err)
     } finally {
       setSubmitting(false)
     }
@@ -124,6 +124,7 @@ export function BabySelector() {
                 value={babyName}
                 onChange={(e) => setBabyName(e.target.value)}
                 required
+                maxLength={100}
               />
             </div>
             <div className="space-y-2">

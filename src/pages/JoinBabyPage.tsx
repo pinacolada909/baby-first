@@ -13,6 +13,7 @@ import { SignUpForm } from '@/components/auth/SignUpForm'
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 import { UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 
 export function JoinBabyPage() {
   const { t } = useLanguage()
@@ -51,7 +52,7 @@ export function JoinBabyPage() {
       } else if (message.includes('Invalid or expired')) {
         toast.error(t('join.error.invalidCode'))
       } else {
-        toast.error(message)
+        toast.error(sanitizeErrorMessage(message))
       }
     }
   }
@@ -99,8 +100,8 @@ export function JoinBabyPage() {
                 id="join-code"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder="ABC123"
-                maxLength={6}
+                placeholder="ABCDE12345FGHIJ"
+                maxLength={15}
                 className="font-mono text-lg tracking-wider uppercase"
               />
             </div>
@@ -111,6 +112,7 @@ export function JoinBabyPage() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder={t('caregiver.join.name')}
+                maxLength={50}
               />
             </div>
             <Button

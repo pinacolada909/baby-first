@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 
 interface BabyProfileFormProps {
   open: boolean
@@ -29,9 +30,8 @@ export function BabyProfileForm({ open, onOpenChange }: BabyProfileFormProps) {
       setBirthDate('')
       onOpenChange(false)
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('common.error')
+      const message = err instanceof Error ? sanitizeErrorMessage(err.message) : t('common.error')
       toast.error(message)
-      console.error('Create baby error:', err)
     }
   }
 
@@ -44,7 +44,7 @@ export function BabyProfileForm({ open, onOpenChange }: BabyProfileFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>{t('baby.name')}</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
+            <Input value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} />
           </div>
           <div>
             <Label>{t('baby.birthDate')}</Label>

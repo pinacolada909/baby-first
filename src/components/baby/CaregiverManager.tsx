@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Copy, Link, UserPlus, Users } from 'lucide-react'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 
 export function CaregiverManager() {
   const { t } = useLanguage()
@@ -72,7 +73,7 @@ export function CaregiverManager() {
       } else if (message.includes('Invalid or expired')) {
         toast.error(t('join.error.invalidCode'))
       } else {
-        toast.error(message)
+        toast.error(sanitizeErrorMessage(message))
       }
     }
   }
@@ -166,7 +167,7 @@ export function CaregiverManager() {
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                 placeholder={t('caregiver.join.code')}
-                maxLength={6}
+                maxLength={15}
                 className="font-mono tracking-wider uppercase"
               />
             </div>
@@ -176,6 +177,7 @@ export function CaregiverManager() {
                 value={joinName}
                 onChange={(e) => setJoinName(e.target.value)}
                 placeholder={t('caregiver.join.name')}
+                maxLength={50}
               />
             </div>
             <Button onClick={handleJoin} disabled={redeemInvite.isPending || !inviteCode || !joinName}>

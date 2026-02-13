@@ -13,6 +13,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 
 export function UpdatePasswordModal() {
   const { t } = useLanguage()
@@ -35,7 +36,7 @@ export function UpdatePasswordModal() {
     try {
       const { error } = await updatePassword(password)
       if (error) {
-        toast.error(error.message)
+        toast.error(sanitizeErrorMessage(error.message))
       } else {
         toast.success(t('auth.updatePassword.success'))
         setPassword('')

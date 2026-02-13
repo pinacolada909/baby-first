@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
+import { sanitizeErrorMessage } from '@/lib/utils'
 import { toast } from 'sonner'
 
 const STORAGE_KEY = 'babyfirst-pending-signup-action'
@@ -13,18 +14,33 @@ type PendingAction =
   | { type: 'redeem_invite'; code: string; displayName: string }
 
 export function setPendingSignupAction(action: PendingAction) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(action))
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(action))
 }
 
 export function clearPendingSignupAction() {
-  localStorage.removeItem(STORAGE_KEY)
+  sessionStorage.removeItem(STORAGE_KEY)
 }
 
 function getPendingSignupAction(): PendingAction | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = sessionStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as PendingAction
+    const parsed: unknown = JSON.parse(raw)
+
+    // Runtime validation
+    if (typeof parsed !== 'object' || parsed === null) return null
+    const obj = parsed as Record<string, unknown>
+    if (obj.type === 'create_baby') {
+      if (typeof obj.babyName !== 'string' || typeof obj.displayName !== 'string') return null
+      if (obj.babyName.length > 100 || obj.displayName.length > 50) return null
+      return { type: 'create_baby', babyName: obj.babyName, displayName: obj.displayName }
+    }
+    if (obj.type === 'redeem_invite') {
+      if (typeof obj.code !== 'string' || typeof obj.displayName !== 'string') return null
+      if (obj.code.length > 20 || obj.displayName.length > 50) return null
+      return { type: 'redeem_invite', code: obj.code, displayName: obj.displayName }
+    }
+    return null
   } catch {
     return null
   }
@@ -69,7 +85,7 @@ export function usePendingSignupAction() {
         await queryClient.invalidateQueries({ queryKey: ['babies'] })
         navigate('/')
       } catch (err) {
-        const message = err instanceof Error ? err.message : t('common.error')
+        const message = err instanceof Error ? sanitizeErrorMessage(err.message) : t('common.error')
         toast.error(message)
       } finally {
         clearPendingSignupAction()

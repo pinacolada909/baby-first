@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 
 interface ForgotPasswordFormProps {
   onBackToSignIn: () => void
@@ -25,13 +26,13 @@ export function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFormProps) 
     try {
       const { error } = await resetPasswordRequest(email)
       if (error) {
-        toast.error(error.message)
+        toast.error(sanitizeErrorMessage(error.message))
       } else {
         setSent(true)
         toast.success(t('auth.forgotPassword.success'))
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('auth.error.generic'))
+      toast.error(err instanceof Error ? sanitizeErrorMessage(err.message) : t('auth.error.generic'))
     } finally {
       setLoading(false)
     }

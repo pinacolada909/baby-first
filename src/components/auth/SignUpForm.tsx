@@ -2,12 +2,13 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { setPendingSignupAction } from '@/hooks/usePendingSignupAction'
+import { setPendingSignupAction, clearPendingSignupAction } from '@/hooks/usePendingSignupAction'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
+import { sanitizeErrorMessage } from '@/lib/utils'
 
 interface SignUpFormProps {
   onSuccess: () => void
@@ -49,8 +50,8 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
       const { error, confirmationRequired } = await signUp(email, password, displayName)
       if (error) {
         // Clear the pending action since sign-up failed
-        localStorage.removeItem('babyfirst-pending-signup-action')
-        toast.error(error.message || t('auth.error.generic'))
+        clearPendingSignupAction()
+        toast.error(sanitizeErrorMessage(error.message || t('auth.error.generic')))
       } else if (confirmationRequired) {
         toast.success(t('auth.signUp.confirmEmail'))
         onSuccess()
@@ -59,8 +60,8 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
         onSuccess()
       }
     } catch (err) {
-      localStorage.removeItem('babyfirst-pending-signup-action')
-      toast.error(err instanceof Error ? err.message : t('auth.error.generic'))
+      clearPendingSignupAction()
+      toast.error(err instanceof Error ? sanitizeErrorMessage(err.message) : t('auth.error.generic'))
     } finally {
       setLoading(false)
     }
@@ -88,6 +89,7 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
+          maxLength={50}
           autoComplete="name"
         />
       </div>
@@ -123,6 +125,7 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
             value={babyName}
             onChange={(e) => setBabyName(e.target.value)}
             required
+            maxLength={100}
           />
         </div>
       ) : (
@@ -132,8 +135,8 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
             id="signup-invite-code"
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-            placeholder="ABC123"
-            maxLength={6}
+            placeholder="ABCDE12345FGHIJ"
+            maxLength={15}
             required
             className="font-mono text-lg tracking-wider uppercase"
           />

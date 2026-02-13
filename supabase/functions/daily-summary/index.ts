@@ -118,8 +118,7 @@ Deno.serve(async (req) => {
           results.push({ userId: pref.user_id, success: false, error: 'User email not found' })
           continue
         }
-        // TODO: Remove override once a custom domain is verified in Resend
-        const userEmail = 'tjiang995@gmail.com' // userData.user.email
+        const userEmail = userData.user.email
 
         // Get user's babies
         const { data: caregivers, error: cgError } = await supabase

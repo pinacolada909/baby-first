@@ -5,10 +5,12 @@ import type { BabyInvite } from '@/types'
 
 const INVITE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
-function generateInviteCode(length = 6): string {
+function generateInviteCode(length = 15): string {
+  const values = new Uint8Array(length)
+  crypto.getRandomValues(values)
   let code = ''
   for (let i = 0; i < length; i++) {
-    code += INVITE_CHARS[Math.floor(Math.random() * INVITE_CHARS.length)]
+    code += INVITE_CHARS[values[i] % INVITE_CHARS.length]
   }
   return code
 }
