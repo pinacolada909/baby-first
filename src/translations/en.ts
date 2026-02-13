@@ -226,7 +226,7 @@ export const en = {
   // Email Settings
   'email.title': 'Email Notifications',
   'email.dailySummary': 'Daily Summary Email',
-  'email.dailySummaryDesc': 'Receive a daily summary of sleep, feeding, and diaper data at 8pm PST',
+  'email.dailySummaryDesc': 'Automatically receive a daily summary of sleep, feeding, and diaper data via email',
   'email.sendTo': 'Emails will be sent to',
   'email.sendTime': 'Sent daily at 8:00 PM PST with CSV attachments',
   'email.enabled': 'Daily summary email enabled',

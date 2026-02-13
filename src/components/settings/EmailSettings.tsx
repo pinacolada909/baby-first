@@ -48,9 +48,12 @@ export function EmailSettings() {
             />
           </div>
 
-          <div className="text-sm text-muted-foreground">
-            <p>{t('email.sendTime')}</p>
-          </div>
+          {preferences?.daily_summary_enabled && (
+            <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground space-y-1">
+              <p>{t('email.sendTime')}</p>
+              <p>{t('email.sendTo')}: <span className="font-medium text-foreground">{user.email}</span></p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
