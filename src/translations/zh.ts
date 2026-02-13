@@ -217,7 +217,7 @@ export const zh: Record<TranslationKey, string> = {
   'caregiver.invite.copyLink': '复制邀请链接',
   'caregiver.invite.linkCopied': '邀请链接已复制！',
   'caregiver.join': '使用邀请码加入',
-  'caregiver.join.code': '输入6位邀请码',
+  'caregiver.join.code': '输入邀请码',
   'caregiver.join.name': '你的显示名称',
   'caregiver.join.button': '加入',
   'caregiver.joined': '成功加入！',

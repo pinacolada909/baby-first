@@ -215,7 +215,7 @@ export const en = {
   'caregiver.invite.copyLink': 'Copy Invite Link',
   'caregiver.invite.linkCopied': 'Invite link copied!',
   'caregiver.join': 'Join with Code',
-  'caregiver.join.code': 'Enter 6-character code',
+  'caregiver.join.code': 'Enter invite code',
   'caregiver.join.name': 'Your Display Name',
   'caregiver.join.button': 'Join',
   'caregiver.joined': 'Successfully joined!',
