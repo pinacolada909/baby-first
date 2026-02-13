@@ -221,6 +221,8 @@ export const en = {
   'join.subtitle': 'Enter an invite code to start caring together',
   'join.signInFirst': 'Sign in or create an account first, then enter your invite code.',
   'join.withCode': 'Join with Code',
+  'join.error.invalidCode': 'Invalid or expired invite code. Please ask for a new one.',
+  'join.error.alreadyMember': 'You are already a caregiver for this baby.',
 
   // Email Settings
   'email.title': 'Email Notifications',

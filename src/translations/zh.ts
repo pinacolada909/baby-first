@@ -223,6 +223,8 @@ export const zh: Record<TranslationKey, string> = {
   'join.subtitle': '输入邀请码，一起照顾宝宝',
   'join.signInFirst': '请先登录或注册账号，然后输入邀请码。',
   'join.withCode': '使用邀请码加入',
+  'join.error.invalidCode': '邀请码无效或已过期，请重新获取。',
+  'join.error.alreadyMember': '你已经是这个宝宝的照护者了。',
 
   // Email Settings
   'email.title': '邮件通知',

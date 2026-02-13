@@ -43,8 +43,16 @@ export function JoinBabyPage() {
       })
       toast.success(t('caregiver.joined'))
       navigate('/')
-    } catch {
-      toast.error(t('common.error'))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('common.error')
+      // Map known DB errors to translated messages
+      if (message.includes('already a caregiver')) {
+        toast.error(t('join.error.alreadyMember'))
+      } else if (message.includes('Invalid or expired')) {
+        toast.error(t('join.error.invalidCode'))
+      } else {
+        toast.error(message)
+      }
     }
   }
 
