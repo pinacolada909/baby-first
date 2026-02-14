@@ -8,6 +8,12 @@ export const zh: Record<TranslationKey, string> = {
   'nav.diaper': '尿布',
   'nav.feeding': '喂养',
   'nav.time': '仪表盘',
+  'nav.settings': '设置',
+
+  // Settings
+  'settings.title': '设置',
+  'settings.subtitle': '管理您的宝宝档案和偏好设置',
+  'settings.babyProfiles': '宝宝档案',
 
   // Auth
   'auth.signIn': '登录',

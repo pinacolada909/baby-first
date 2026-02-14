@@ -6,6 +6,12 @@ export const en = {
   'nav.diaper': 'Diaper',
   'nav.feeding': 'Feeding',
   'nav.time': 'Dashboard',
+  'nav.settings': 'Settings',
+
+  // Settings
+  'settings.title': 'Settings',
+  'settings.subtitle': 'Manage your baby profiles and preferences',
+  'settings.babyProfiles': 'Baby Profiles',
 
   // Auth
   'auth.signIn': 'Sign In',

@@ -14,8 +14,6 @@ import { WorkloadSummaryCards } from '@/components/dashboard/WorkloadSummaryCard
 import { WorkloadBalanceBar } from '@/components/dashboard/WorkloadBalanceBar'
 import { ActivityBreakdownChart } from '@/components/dashboard/ActivityBreakdownChart'
 import { HouseholdTaskLogger } from '@/components/dashboard/HouseholdTaskLogger'
-import { CaregiverManager } from '@/components/baby/CaregiverManager'
-import { EmailSettings } from '@/components/settings/EmailSettings'
 
 // Demo data generators
 function makeDemoActivities(): CaregiverActivity[] {
@@ -199,12 +197,6 @@ export function ActivityDashboardPage() {
         onDemoLog={handleDemoLog}
         onDemoDelete={handleDemoDelete}
       />
-
-      {/* Caregiver Manager */}
-      {isDemo ? null : <CaregiverManager />}
-
-      {/* Email Settings */}
-      {!isDemo && <EmailSettings />}
     </div>
   )
 }

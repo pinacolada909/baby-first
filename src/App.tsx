@@ -13,6 +13,7 @@ import { DiaperTrackerPage } from '@/pages/DiaperTrackerPage'
 import { FeedingTrackerPage } from '@/pages/FeedingTrackerPage'
 import { ActivityDashboardPage } from '@/pages/ActivityDashboardPage'
 import { JoinBabyPage } from '@/pages/JoinBabyPage'
+import { SettingsPage } from '@/pages/SettingsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +40,7 @@ export default function App() {
                   <Route path="/feeding-tracker" element={<FeedingTrackerPage />} />
                   <Route path="/time-management" element={<ActivityDashboardPage />} />
                   <Route path="/join" element={<JoinBabyPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
                 </Route>
               </Routes>
             </BrowserRouter>

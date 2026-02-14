@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Home,
   HelpCircle,
@@ -9,6 +9,7 @@ import {
   LogIn,
   LogOut,
   User,
+  Settings,
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -40,6 +41,7 @@ const navLinks: { to: string; labelKey: TranslationKey; icon: typeof Home }[] = 
 export function Navigation({ onOpenAuth }: NavigationProps) {
   const { t } = useLanguage()
   const { user, isDemo, signOut } = useAuth()
+  const navigate = useNavigate()
 
   const handleSignOut = async () => {
     await signOut()
@@ -96,6 +98,10 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
                   {user?.email}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <Settings className="size-4" />
+                  {t('nav.settings')}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="size-4" />
                   {t('auth.signOut')}
