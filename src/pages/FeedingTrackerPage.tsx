@@ -72,18 +72,16 @@ export function FeedingTrackerPage() {
       startDate = new Date(now.getTime() - 30 * 86400000)
     }
     const filtered = feedings.filter((f) => new Date(f.fed_at) >= startDate)
-    const buckets: Record<string, { label: string; volume: number }> = {}
+    const buckets: Record<string, { label: string; breastmilk: number; formula: number; ready_to_feed: number }> = {}
 
     filtered.forEach((f) => {
       const d = new Date(f.fed_at)
       const label = period === 'day'
         ? `${d.getHours()}:00`
         : `${d.getMonth() + 1}/${d.getDate()}`
-      if (!buckets[label]) buckets[label] = { label, volume: 0 }
-      // Sum volume in mL
-      buckets[label].volume += f.volume_ml ?? 0
+      if (!buckets[label]) buckets[label] = { label, breastmilk: 0, formula: 0, ready_to_feed: 0 }
+      buckets[label][f.feeding_type] += f.volume_ml ?? 0
     })
-    // Sort by time - for day view, sort numerically by hour
     return Object.values(buckets).sort((a, b) => {
       if (period === 'day') {
         return parseInt(a.label) - parseInt(b.label)
@@ -222,7 +220,9 @@ export function FeedingTrackerPage() {
                     <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="volume" fill="#f97316" name={`${t('feeding.total')} (${t('feeding.ml')})`} />
+                    <Bar dataKey="breastmilk" stackId="a" fill="#f472b6" name={typeTranslation('breastmilk')} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="formula" stackId="a" fill="#60a5fa" name={typeTranslation('formula')} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="ready_to_feed" stackId="a" fill="#4ade80" name={typeTranslation('ready_to_feed')} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
