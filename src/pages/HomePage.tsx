@@ -100,9 +100,9 @@ export function HomePage() {
 
       {/* Stats Row */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="border-2 border-[#ddd6fe]">
+        <Card className="border border-[#e9e5f5]">
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-[#a78bfa]">
+            <p className="text-3xl font-bold text-[#b4a0d6]">
               {t('home.stats.questions')}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -110,9 +110,9 @@ export function HomePage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-2 border-[#bbf7d0]">
+        <Card className="border border-[#d4edda]">
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-emerald-500">
+            <p className="text-3xl font-bold text-[#6dbc86]">
               {t('home.stats.tracking')}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -120,9 +120,9 @@ export function HomePage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="border-2 border-[#fbcfe8]">
+        <Card className="border border-[#f5dce8]">
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-pink-500">
+            <p className="text-3xl font-bold text-[#d4859a]">
               {t('home.stats.saved')}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
