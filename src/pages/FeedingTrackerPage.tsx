@@ -220,9 +220,9 @@ export function FeedingTrackerPage() {
                     <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="breastmilk" stackId="a" fill="#f472b6" name={typeTranslation('breastmilk')} radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="formula" stackId="a" fill="#60a5fa" name={typeTranslation('formula')} radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="ready_to_feed" stackId="a" fill="#4ade80" name={typeTranslation('ready_to_feed')} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="breastmilk" stackId="a" fill="#e8a0bf" name={typeTranslation('breastmilk')} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="formula" stackId="a" fill="#9bb8d8" name={typeTranslation('formula')} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="ready_to_feed" stackId="a" fill="#a3c9a8" name={typeTranslation('ready_to_feed')} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
