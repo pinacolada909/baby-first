@@ -170,36 +170,39 @@ export function CaregiverManager() {
           </div>
         )}
 
-        <Separator />
-
-        {/* Join Section */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium">{t('caregiver.join')}</h3>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="flex-1">
-              <Label className="sr-only">{t('caregiver.join.code')}</Label>
-              <Input
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder={t('caregiver.join.code')}
-                maxLength={15}
-                className="font-mono tracking-wider uppercase"
-              />
+        {/* Join Section (non-primary only — primary already has access) */}
+        {!isPrimary && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium">{t('caregiver.join')}</h3>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="flex-1">
+                  <Label className="sr-only">{t('caregiver.join.code')}</Label>
+                  <Input
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                    placeholder={t('caregiver.join.code')}
+                    maxLength={15}
+                    className="font-mono tracking-wider uppercase"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label className="sr-only">{t('caregiver.join.name')}</Label>
+                  <Input
+                    value={joinName}
+                    onChange={(e) => setJoinName(e.target.value)}
+                    placeholder={t('caregiver.join.name')}
+                    maxLength={50}
+                  />
+                </div>
+                <Button onClick={handleJoin} disabled={redeemInvite.isPending || !inviteCode || !joinName}>
+                  {t('caregiver.join.button')}
+                </Button>
+              </div>
             </div>
-            <div className="flex-1">
-              <Label className="sr-only">{t('caregiver.join.name')}</Label>
-              <Input
-                value={joinName}
-                onChange={(e) => setJoinName(e.target.value)}
-                placeholder={t('caregiver.join.name')}
-                maxLength={50}
-              />
-            </div>
-            <Button onClick={handleJoin} disabled={redeemInvite.isPending || !inviteCode || !joinName}>
-              {t('caregiver.join.button')}
-            </Button>
-          </div>
-        </div>
+          </>
+        )}
       </CardContent>
 
       {/* Remove Confirmation Dialog */}
