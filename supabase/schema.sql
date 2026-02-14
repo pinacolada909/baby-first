@@ -472,7 +472,36 @@ END;
 $$;
 
 -- ============================================================
--- 8. REALTIME
+-- 8. EMAIL PREFERENCES
+-- ============================================================
+
+CREATE TABLE public.email_preferences (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id               UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE UNIQUE,
+  daily_summary_enabled BOOLEAN NOT NULL DEFAULT false,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.email_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "email_preferences_select"
+  ON public.email_preferences FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "email_preferences_insert"
+  ON public.email_preferences FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "email_preferences_update"
+  ON public.email_preferences FOR UPDATE
+  TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- ============================================================
+-- 9. REALTIME
 -- ============================================================
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.sleep_sessions;
