@@ -188,12 +188,12 @@ export function FeedingTrackerPage() {
           </div>
           <div>
             <Label>{t('feeding.volume')}</Label>
-            <Input type="number" value={volume} onChange={(e) => setVolume(e.target.value)} placeholder="120" />
+            <Input type="number" value={volume} onChange={(e) => setVolume(e.target.value)} placeholder="mL" />
           </div>
           {feedingType === 'breastmilk' && (
             <div>
               <Label>{t('feeding.duration')}</Label>
-              <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="15" />
+              <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="min" />
             </div>
           )}
           <div>
