@@ -3,9 +3,10 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useDiaperChanges, useAddDiaperChange, useDeleteDiaperChange } from '@/hooks/useDiaperChanges'
+import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { DiaperChange, DiaperStatus } from '@/types'
+import type { DiaperChange, DiaperStatus, BabyCaregiver } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,9 +40,16 @@ export function DiaperTrackerPage() {
   const babyId = isDemo ? undefined : selectedBaby?.id
 
   const { data: dbChanges = [] } = useDiaperChanges(babyId)
+  const { data: caregivers = [] } = useCaregivers(babyId)
   const addMutation = useAddDiaperChange()
   const deleteMutation = useDeleteDiaperChange()
   useRealtimeSync('diaper_changes', babyId, queryKeys.diaper.byBaby(babyId ?? ''))
+
+  const isPrimary = caregivers.some(
+    (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary',
+  )
+  const canDelete = (record: DiaperChange) =>
+    isDemo || isPrimary || record.caregiver_id === user?.id
 
   const [demoChanges, setDemoChanges] = useState<DiaperChange[]>([])
   const changes = isDemo ? demoChanges : dbChanges
@@ -168,9 +176,11 @@ export function DiaperTrackerPage() {
                       {c.notes && <p className="text-xs text-muted-foreground">{c.notes}</p>}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  {canDelete(c) && (
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

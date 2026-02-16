@@ -3,9 +3,10 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useSleepSessions, useAddSleep, useDeleteSleep } from '@/hooks/useSleepSessions'
+import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { SleepSession } from '@/types'
+import type { SleepSession, BabyCaregiver } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,9 +35,16 @@ export function SleepTrackerPage() {
 
   // DB hooks
   const { data: dbSessions = [] } = useSleepSessions(babyId)
+  const { data: caregivers = [] } = useCaregivers(babyId)
   const addMutation = useAddSleep()
   const deleteMutation = useDeleteSleep()
   useRealtimeSync('sleep_sessions', babyId, queryKeys.sleep.byBaby(babyId ?? ''))
+
+  const isPrimary = caregivers.some(
+    (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary',
+  )
+  const canDelete = (record: SleepSession) =>
+    isDemo || isPrimary || record.caregiver_id === user?.id
 
   // Demo state
   const [demoSessions, setDemoSessions] = useState<SleepSession[]>([])
@@ -227,9 +235,11 @@ export function SleepTrackerPage() {
                       {s.notes && ` - ${s.notes}`}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  {canDelete(s) && (
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

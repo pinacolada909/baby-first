@@ -3,9 +3,10 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useFeedings, useAddFeeding, useDeleteFeeding } from '@/hooks/useFeedings'
+import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { Feeding, FeedingType } from '@/types'
+import type { Feeding, FeedingType, BabyCaregiver } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,9 +41,16 @@ export function FeedingTrackerPage() {
   const babyId = isDemo ? undefined : selectedBaby?.id
 
   const { data: dbFeedings = [] } = useFeedings(babyId)
+  const { data: caregivers = [] } = useCaregivers(babyId)
   const addMutation = useAddFeeding()
   const deleteMutation = useDeleteFeeding()
   useRealtimeSync('feedings', babyId, queryKeys.feeding.byBaby(babyId ?? ''))
+
+  const isPrimary = caregivers.some(
+    (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary',
+  )
+  const canDelete = (record: Feeding) =>
+    isDemo || isPrimary || record.caregiver_id === user?.id
 
   const [demoFeedings, setDemoFeedings] = useState<Feeding[]>([])
   const feedings = isDemo ? demoFeedings : dbFeedings
@@ -256,9 +264,11 @@ export function FeedingTrackerPage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(f.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  {canDelete(f) && (
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(f.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

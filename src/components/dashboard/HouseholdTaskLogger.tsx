@@ -1,5 +1,6 @@
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCaregivers } from '@/hooks/useCaregivers'
 import { useAddCareTask, useDeleteCareTask } from '@/hooks/useCareTasks'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Trash2, UtensilsCrossed, SprayCan, Shirt, Stethoscope, ShoppingCart, Bath, Sparkles, Gamepad2, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { HOUSEHOLD_TASK_TYPES } from '@/types'
-import type { TaskType, CareTask } from '@/types'
+import type { TaskType, CareTask, BabyCaregiver } from '@/types'
 
 const TASK_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   cooking: UtensilsCrossed,
@@ -55,8 +56,15 @@ export function HouseholdTaskLogger({
 }: HouseholdTaskLoggerProps) {
   const { t } = useLanguage()
   const { user } = useAuth()
+  const { data: caregivers = [] } = useCaregivers(babyId)
   const addTask = useAddCareTask()
   const deleteTask = useDeleteCareTask()
+
+  const isPrimary = caregivers.some(
+    (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary',
+  )
+  const canDeleteTask = (task: RecentTask) =>
+    isDemo || isPrimary || task.caregiver_id === user?.id
 
   const handleLog = async (taskType: TaskType) => {
     if (isDemo) {
@@ -143,14 +151,16 @@ export function HouseholdTaskLogger({
                       {task.completed_at ? timeAgo(task.completed_at) : ''}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(task.id)}
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  {canDeleteTask(task) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(task.id)}
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

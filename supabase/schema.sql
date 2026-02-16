@@ -265,7 +265,10 @@ CREATE POLICY "sleep_sessions_insert"
 CREATE POLICY "sleep_sessions_delete"
   ON public.sleep_sessions FOR DELETE
   TO authenticated
-  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
 
 -- ---- diaper_changes policies ----
 CREATE POLICY "diaper_changes_select"
@@ -284,7 +287,10 @@ CREATE POLICY "diaper_changes_insert"
 CREATE POLICY "diaper_changes_delete"
   ON public.diaper_changes FOR DELETE
   TO authenticated
-  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
 
 -- ---- feedings policies ----
 CREATE POLICY "feedings_select"
@@ -303,7 +309,10 @@ CREATE POLICY "feedings_insert"
 CREATE POLICY "feedings_delete"
   ON public.feedings FOR DELETE
   TO authenticated
-  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
 
 -- ---- time_blocks policies ----
 CREATE POLICY "time_blocks_select"
@@ -322,7 +331,10 @@ CREATE POLICY "time_blocks_insert"
 CREATE POLICY "time_blocks_delete"
   ON public.time_blocks FOR DELETE
   TO authenticated
-  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
 
 -- ---- care_tasks policies ----
 CREATE POLICY "care_tasks_select"
@@ -347,7 +359,10 @@ CREATE POLICY "care_tasks_update"
 CREATE POLICY "care_tasks_delete"
   ON public.care_tasks FOR DELETE
   TO authenticated
-  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
 
 -- ============================================================
 -- 4. INDEXES
