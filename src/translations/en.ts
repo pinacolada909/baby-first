@@ -254,6 +254,21 @@ export const en = {
   'email.enabled': 'Daily summary email enabled',
   'email.disabled': 'Daily summary email disabled',
 
+  // Voice Input
+  'voice.start': 'Tap to speak',
+  'voice.stop': 'Tap to stop',
+  'voice.listening': 'Listening...',
+  'voice.processing': 'Processing...',
+  'voice.parsed': 'Fields populated from voice',
+  'voice.error.noMic': 'Microphone access denied. Please allow microphone permission.',
+  'voice.error.unsupported': 'Voice input is not supported in this browser. Try Chrome or Edge.',
+  'voice.error.parseFailed': 'Could not understand the input. Please try again or enter manually.',
+  'voice.error.network': 'Network error. Please check your connection.',
+  'voice.confidence.low': 'Low confidence - please review the filled fields',
+  'voice.hint.sleep': 'Try: "Baby slept from 2pm to 4pm"',
+  'voice.hint.feeding': 'Try: "Fed 120ml formula at 3pm"',
+  'voice.hint.diaper': 'Try: "Wet diaper at 2:30pm"',
+
   // Common
   'common.save': 'Save',
   'common.cancel': 'Cancel',

@@ -115,3 +115,28 @@ export interface CareTask {
   notes: string | null
   created_at: string
 }
+
+// Voice Input Types
+export type TrackerType = 'sleep' | 'feeding' | 'diaper'
+
+export interface ParsedSleepData {
+  start_time: string | null
+  end_time: string | null
+  notes: string | null
+}
+
+export interface ParsedFeedingData {
+  time: string | null
+  feeding_type: FeedingType | null
+  volume_ml: number | null
+  duration_minutes: number | null
+  notes: string | null
+}
+
+export interface ParsedDiaperData {
+  time: string | null
+  status: DiaperStatus | null
+  notes: string | null
+}
+
+export type ParsedFormData = ParsedSleepData | ParsedFeedingData | ParsedDiaperData

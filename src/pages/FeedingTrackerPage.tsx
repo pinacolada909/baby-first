@@ -6,7 +6,8 @@ import { useFeedings, useAddFeeding, useDeleteFeeding } from '@/hooks/useFeeding
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { Feeding, FeedingType, BabyCaregiver } from '@/types'
+import type { Feeding, FeedingType, BabyCaregiver, ParsedFeedingData } from '@/types'
+import { VoiceInputButton } from '@/components/voice/VoiceInputButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -206,7 +207,22 @@ export function FeedingTrackerPage() {
             <Label>{t('feeding.notes')}</Label>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('feeding.notes')} />
           </div>
-          <Button onClick={handleAdd}>{t('feeding.add')}</Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleAdd}>{t('feeding.add')}</Button>
+            {!isDemo && (
+              <VoiceInputButton
+                trackerType="feeding"
+                onParsed={(data) => {
+                  const d = data as ParsedFeedingData
+                  if (d.time) setTime(formatDatetimeLocal(new Date(d.time)))
+                  if (d.feeding_type) setFeedingType(d.feeding_type)
+                  if (d.volume_ml != null) setVolume(String(d.volume_ml))
+                  if (d.duration_minutes != null) setDuration(String(d.duration_minutes))
+                  if (d.notes) setNotes(d.notes)
+                }}
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
 

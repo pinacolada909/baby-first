@@ -6,7 +6,8 @@ import { useDiaperChanges, useAddDiaperChange, useDeleteDiaperChange } from '@/h
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { DiaperChange, DiaperStatus, BabyCaregiver } from '@/types'
+import type { DiaperChange, DiaperStatus, BabyCaregiver, ParsedDiaperData } from '@/types'
+import { VoiceInputButton } from '@/components/voice/VoiceInputButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -153,7 +154,20 @@ export function DiaperTrackerPage() {
             <Label>{t('diaper.notes')}</Label>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('diaper.notes')} />
           </div>
-          <Button onClick={handleAdd}>{t('diaper.add')}</Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleAdd}>{t('diaper.add')}</Button>
+            {!isDemo && (
+              <VoiceInputButton
+                trackerType="diaper"
+                onParsed={(data) => {
+                  const d = data as ParsedDiaperData
+                  if (d.time) setTime(formatDatetimeLocal(new Date(d.time)))
+                  if (d.status) setStatus(d.status)
+                  if (d.notes) setNotes(d.notes)
+                }}
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
 

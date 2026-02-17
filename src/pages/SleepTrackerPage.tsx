@@ -6,7 +6,8 @@ import { useSleepSessions, useAddSleep, useDeleteSleep } from '@/hooks/useSleepS
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { SleepSession, BabyCaregiver } from '@/types'
+import type { SleepSession, BabyCaregiver, ParsedSleepData } from '@/types'
+import { VoiceInputButton } from '@/components/voice/VoiceInputButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -177,9 +178,22 @@ export function SleepTrackerPage() {
             <Label>{t('sleep.notes')}</Label>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('sleep.notes')} />
           </div>
-          <Button onClick={handleAdd} disabled={duration <= 0}>
-            {t('sleep.add')}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleAdd} disabled={duration <= 0}>
+              {t('sleep.add')}
+            </Button>
+            {!isDemo && (
+              <VoiceInputButton
+                trackerType="sleep"
+                onParsed={(data) => {
+                  const d = data as ParsedSleepData
+                  if (d.start_time) setStartTime(formatDatetimeLocal(new Date(d.start_time)))
+                  if (d.end_time) setEndTime(formatDatetimeLocal(new Date(d.end_time)))
+                  if (d.notes) setNotes(d.notes)
+                }}
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
 

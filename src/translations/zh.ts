@@ -256,6 +256,21 @@ export const zh: Record<TranslationKey, string> = {
   'email.enabled': '每日总结邮件已启用',
   'email.disabled': '每日总结邮件已禁用',
 
+  // Voice Input
+  'voice.start': '点击说话',
+  'voice.stop': '点击停止',
+  'voice.listening': '正在听...',
+  'voice.processing': '处理中...',
+  'voice.parsed': '已从语音填充字段',
+  'voice.error.noMic': '麦克风访问被拒绝。请允许麦克风权限。',
+  'voice.error.unsupported': '此浏览器不支持语音输入。请尝试使用Chrome或Edge。',
+  'voice.error.parseFailed': '无法理解输入。请重试或手动输入。',
+  'voice.error.network': '网络错误。请检查您的连接。',
+  'voice.confidence.low': '低置信度 - 请检查填充的字段',
+  'voice.hint.sleep': '试试："宝宝从下午2点睡到4点"',
+  'voice.hint.feeding': '试试："下午3点喝了120毫升配方奶"',
+  'voice.hint.diaper': '试试："下午2点半换了湿尿布"',
+
   // Common
   'common.save': '保存',
   'common.cancel': '取消',
