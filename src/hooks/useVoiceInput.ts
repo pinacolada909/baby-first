@@ -18,12 +18,16 @@ interface UseVoiceInputReturn {
   error: string | null
 }
 
-// Check browser support
-const SpeechRecognitionAPI =
-  typeof window !== 'undefined'
-    ? (window as unknown as { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition
-    : null
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Web Speech API — not all TS configs include these types
+const getSpeechRecognitionClass = (): (new () => any) | null => {
+  if (typeof window === 'undefined') return null
+  const w = window as any
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null
+}
+
+const SpeechRecognitionClass = getSpeechRecognitionClass()
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceInputOptions): UseVoiceInputReturn {
   const { language } = useLanguage()
@@ -32,7 +36,8 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
   const [error, setError] = useState<string | null>(null)
   const onParsedRef = useRef(onParsed)
   onParsedRef.current = onParsed
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
   const transcriptRef = useRef('')
   const stateRef = useRef<VoiceState>('idle')
 
@@ -63,14 +68,8 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
 
       if (fnError) {
         console.error('Edge function error:', fnError)
-        let errorBody: { error?: string } | null = null
-        try {
-          if ('context' in fnError && (fnError as { context: { json: () => Promise<unknown> } }).context?.json) {
-            errorBody = await (fnError as { context: { json: () => Promise<{ error?: string }> } }).context.json()
-          }
-        } catch { /* ignore */ }
-        const errorMsg = errorBody?.error || ''
-        setError(errorMsg.includes('rate') || errorMsg.includes('429') ? 'rate_limited' : 'network_error')
+        const errorStr = String(fnError)
+        setError(errorStr.includes('429') || errorStr.includes('rate') ? 'rate_limited' : 'network_error')
         return
       }
 
@@ -90,17 +89,18 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
   }, [trackerType, language])
 
   const startListening = useCallback(() => {
-    if (!SpeechRecognitionAPI) return
+    if (!SpeechRecognitionClass) return
 
     setError(null)
     setTranscript('')
 
-    const recognition = new SpeechRecognitionAPI()
+    const recognition = new SpeechRecognitionClass()
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = language === 'zh' ? 'zh-CN' : 'en-US'
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
       let finalTranscript = ''
       let interimTranscript = ''
       for (let i = 0; i < event.results.length; i++) {
@@ -116,7 +116,8 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
       transcriptRef.current = combined
     }
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
         setError('mic_permission_denied')
@@ -166,7 +167,7 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
   return {
     state,
     transcript,
-    browserSupported: !!SpeechRecognitionAPI,
+    browserSupported: !!SpeechRecognitionClass,
     startListening,
     stopAndParse,
     error,
