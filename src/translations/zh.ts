@@ -266,6 +266,7 @@ export const zh: Record<TranslationKey, string> = {
   'voice.error.unsupported': '此浏览器不支持语音输入。请尝试使用Chrome或Edge。',
   'voice.error.parseFailed': '无法理解输入。请重试或手动输入。',
   'voice.error.network': '网络错误。请检查您的连接。',
+  'voice.error.rateLimited': '请求过于频繁。请稍等片刻再试。',
   'voice.confidence.low': '低置信度 - 请检查填充的字段',
   'voice.hint.sleep': '试试："宝宝从下午2点睡到4点"',
   'voice.hint.feeding': '试试："下午3点喝了120毫升配方奶"',

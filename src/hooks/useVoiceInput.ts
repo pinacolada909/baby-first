@@ -58,14 +58,18 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
         })
 
         if (fnError) {
-          throw fnError
+          console.error('Edge function error:', fnError)
+          // fnError from supabase client can be a FunctionsHttpError, FunctionsRelayError, or FunctionsFetchError
+          setError('network_error')
+          return
         }
 
         if (data?.success && data.data) {
           setParsedData(data.data)
           setConfidence(data.confidence || 'medium')
         } else {
-          setError('parse_failed')
+          console.error('Parse failed, response:', data)
+          setError(data?.error?.includes('rate') || data?.error?.includes('429') ? 'rate_limited' : 'parse_failed')
         }
       } catch (err) {
         console.error('Voice parse error:', err)

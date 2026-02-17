@@ -264,6 +264,7 @@ export const en = {
   'voice.error.unsupported': 'Voice input is not supported in this browser. Try Chrome or Edge.',
   'voice.error.parseFailed': 'Could not understand the input. Please try again or enter manually.',
   'voice.error.network': 'Network error. Please check your connection.',
+  'voice.error.rateLimited': 'Too many requests. Please wait a moment and try again.',
   'voice.confidence.low': 'Low confidence - please review the filled fields',
   'voice.hint.sleep': 'Try: "Baby slept from 2pm to 4pm"',
   'voice.hint.feeding': 'Try: "Fed 120ml formula at 3pm"',

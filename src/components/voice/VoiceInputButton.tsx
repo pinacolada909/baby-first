@@ -53,6 +53,7 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
       mic_permission_denied: t('voice.error.noMic'),
       parse_failed: t('voice.error.parseFailed'),
       network_error: t('voice.error.network'),
+      rate_limited: t('voice.error.rateLimited'),
     }
 
     toast.error(errorMessages[error] || t('common.error'))

@@ -83,34 +83,63 @@ Deno.serve(async (req) => {
     const currentTime = new Date().toISOString()
     const systemPrompt = buildSystemPrompt(tracker_type, currentTime)
 
-    // Call Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`
-
-    const geminiResponse = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `Tracker type: ${tracker_type}\nLanguage: ${language || 'en'}\nTranscript: "${transcript}"` }],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.1,
+    // Call Gemini API with retry and model fallback
+    const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash-lite']
+    const requestBody = JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: `Tracker type: ${tracker_type}\nLanguage: ${language || 'en'}\nTranscript: "${transcript}"` }],
         },
-      }),
+      ],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.1,
+      },
     })
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text()
-      console.error('Gemini API error:', errorText)
-      throw new Error(`Gemini API returned ${geminiResponse.status}`)
+    let geminiData = null
+    let lastError = ''
+
+    for (const model of models) {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`
+
+      // Retry up to 3 times with exponential backoff for rate limits
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) {
+          const delay = 1000 * Math.pow(2, attempt) // 2s, 4s
+          await new Promise((r) => setTimeout(r, delay))
+        }
+
+        const geminiResponse = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
+        })
+
+        if (geminiResponse.ok) {
+          geminiData = await geminiResponse.json()
+          break
+        }
+
+        const errorText = await geminiResponse.text()
+        lastError = `${model} returned ${geminiResponse.status}`
+        console.error(`Gemini API error (${model}, attempt ${attempt + 1}):`, errorText)
+
+        // Only retry on 429 (rate limit) or 503 (overloaded)
+        if (geminiResponse.status !== 429 && geminiResponse.status !== 503) {
+          break
+        }
+      }
+
+      if (geminiData) break
     }
 
-    const geminiData = await geminiResponse.json()
+    if (!geminiData) {
+      throw new Error(lastError || 'All Gemini models failed')
+    }
+
     const responseText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
 
     if (!responseText) {
