@@ -102,6 +102,19 @@ export function FeedingTrackerPage() {
   const typeTranslation = (ft: FeedingType) => t(`feeding.type.${ft}` as `feeding.type.${'breastmilk' | 'formula' | 'ready_to_feed'}`)
 
   const handleAdd = async () => {
+    const newTime = new Date(time).getTime()
+
+    // Check for duplicate feeding at the same time
+    const duplicate = feedings.find((f) => {
+      const existTime = new Date(f.fed_at).getTime()
+      return Math.abs(newTime - existTime) < 60_000 // within 1 minute
+    })
+
+    if (duplicate) {
+      toast.error(t('feeding.overlap'))
+      return
+    }
+
     const feeding = {
       baby_id: babyId ?? 'demo',
       caregiver_id: user?.id ?? 'demo',

@@ -67,6 +67,19 @@ export function DiaperTrackerPage() {
   }, [todayChanges])
 
   const handleAdd = async () => {
+    const newTime = new Date(time).getTime()
+
+    // Check for duplicate diaper change at the same time
+    const duplicate = changes.find((c) => {
+      const existTime = new Date(c.changed_at).getTime()
+      return Math.abs(newTime - existTime) < 60_000 // within 1 minute
+    })
+
+    if (duplicate) {
+      toast.error(t('diaper.overlap'))
+      return
+    }
+
     const change = {
       baby_id: babyId ?? 'demo',
       caregiver_id: user?.id ?? 'demo',

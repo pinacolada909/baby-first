@@ -126,6 +126,7 @@ export const zh: Record<TranslationKey, string> = {
   'sleep.tips.3': '尽早建立一致的睡前例程',
   'sleep.deleted': '睡眠记录已删除',
   'sleep.added': '睡眠记录已添加',
+  'sleep.overlap': '此时间段与已有的睡眠记录重叠。',
 
   // Diaper Tracker
   'diaper.title': '尿布追踪',
@@ -145,6 +146,7 @@ export const zh: Record<TranslationKey, string> = {
   'diaper.empty': '暂无尿布更换记录',
   'diaper.deleted': '尿布记录已删除',
   'diaper.added': '尿布更换已记录',
+  'diaper.overlap': '该时间已有尿布更换记录。',
 
   // Feeding Tracker
   'feeding.title': '喂养追踪',
@@ -171,6 +173,7 @@ export const zh: Record<TranslationKey, string> = {
   'feeding.empty': '暂无喂养记录',
   'feeding.deleted': '喂养记录已删除',
   'feeding.added': '喂养记录已添加',
+  'feeding.overlap': '该时间已有喂养记录。',
   'feeding.ml': '毫升',
   'feeding.min': '分钟',
 

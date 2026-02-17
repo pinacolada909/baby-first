@@ -124,6 +124,7 @@ export const en = {
   'sleep.tips.3': 'Establish a consistent bedtime routine early',
   'sleep.deleted': 'Sleep session deleted',
   'sleep.added': 'Sleep session logged',
+  'sleep.overlap': 'This time overlaps with an existing sleep session.',
 
   // Diaper Tracker
   'diaper.title': 'Diaper Tracker',
@@ -143,6 +144,7 @@ export const en = {
   'diaper.empty': 'No diaper changes logged yet',
   'diaper.deleted': 'Diaper change deleted',
   'diaper.added': 'Diaper change logged',
+  'diaper.overlap': 'A diaper change already exists at this time.',
 
   // Feeding Tracker
   'feeding.title': 'Feeding Tracker',
@@ -169,6 +171,7 @@ export const en = {
   'feeding.empty': 'No feedings logged yet',
   'feeding.deleted': 'Feeding deleted',
   'feeding.added': 'Feeding logged',
+  'feeding.overlap': 'A feeding already exists at this time.',
   'feeding.ml': 'mL',
   'feeding.min': 'min',
 

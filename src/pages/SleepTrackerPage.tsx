@@ -107,6 +107,21 @@ export function SleepTrackerPage() {
   }, [sessions, period])
 
   const handleAdd = async () => {
+    const newStart = new Date(startTime).getTime()
+    const newEnd = new Date(endTime).getTime()
+
+    // Check for time overlap with existing sessions
+    const overlap = sessions.find((s) => {
+      const existStart = new Date(s.start_time).getTime()
+      const existEnd = new Date(s.end_time).getTime()
+      return newStart < existEnd && newEnd > existStart
+    })
+
+    if (overlap) {
+      toast.error(t('sleep.overlap'))
+      return
+    }
+
     const session = {
       baby_id: babyId ?? 'demo',
       caregiver_id: user?.id ?? 'demo',
