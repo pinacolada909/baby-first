@@ -15,9 +15,10 @@ Rules:
 - If a field cannot be determined from the transcript, set it to null
 - For relative times like "just now" or "an hour ago", compute from the current time
 - For ambiguous times like "2pm", use today's date
+- IMPORTANT: All times are in the user's local timezone shown above. Return datetime values as local times WITHOUT a Z suffix or timezone offset (e.g. "2026-02-17T14:00:00", NOT "2026-02-17T14:00:00Z")
 - Chinese input mappings: "母乳" = breastmilk, "配方奶" = formula, "即饮奶" = ready_to_feed, "湿" = wet, "脏" = dirty, "混合" = mixed, "干" = dry
 - Return ONLY valid JSON, no markdown formatting or code blocks
-- All datetime values must be ISO 8601 format
+- All datetime values must be ISO 8601 format without timezone offset
 
 `
 
@@ -64,7 +65,7 @@ Deno.serve(async (req) => {
       throw new Error('GEMINI_API_KEY is not set')
     }
 
-    const { transcript, tracker_type, language } = await req.json()
+    const { transcript, tracker_type, language, timezone } = await req.json()
 
     if (!transcript || typeof transcript !== 'string') {
       return new Response(
@@ -80,7 +81,11 @@ Deno.serve(async (req) => {
       )
     }
 
-    const currentTime = new Date().toISOString()
+    // Format current time in user's timezone so Gemini interprets relative/ambiguous times correctly
+    const userTimezone = timezone || 'UTC'
+    const now = new Date()
+    const currentTimeLocal = now.toLocaleString('en-US', { timeZone: userTimezone, dateStyle: 'full', timeStyle: 'long' })
+    const currentTime = `${currentTimeLocal} (timezone: ${userTimezone})`
     const systemPrompt = buildSystemPrompt(tracker_type, currentTime)
 
     // Call Gemini API with retry and model fallback

@@ -54,8 +54,9 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
       setError(null)
 
       try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
         const { data, error: fnError } = await supabase.functions.invoke('parse-voice-input', {
-          body: { transcript: text, tracker_type: trackerType, language },
+          body: { transcript: text, tracker_type: trackerType, language, timezone },
         })
 
         if (fnError) {
