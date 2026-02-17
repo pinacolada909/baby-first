@@ -59,8 +59,21 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
 
         if (fnError) {
           console.error('Edge function error:', fnError)
-          // fnError from supabase client can be a FunctionsHttpError, FunctionsRelayError, or FunctionsFetchError
-          setError('network_error')
+          // Try to extract the JSON body from FunctionsHttpError
+          let errorBody: { error?: string } | null = null
+          try {
+            if ('context' in fnError && (fnError as { context: { json: () => Promise<unknown> } }).context?.json) {
+              errorBody = await (fnError as { context: { json: () => Promise<{ error?: string }> } }).context.json()
+            }
+          } catch {
+            // ignore parsing errors
+          }
+          const errorMsg = errorBody?.error || ''
+          if (errorMsg.includes('rate') || errorMsg.includes('429')) {
+            setError('rate_limited')
+          } else {
+            setError('network_error')
+          }
           return
         }
 
@@ -69,7 +82,8 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
           setConfidence(data.confidence || 'medium')
         } else {
           console.error('Parse failed, response:', data)
-          setError(data?.error?.includes('rate') || data?.error?.includes('429') ? 'rate_limited' : 'parse_failed')
+          const errorMsg = data?.error || ''
+          setError(errorMsg.includes('rate') || errorMsg.includes('429') ? 'rate_limited' : 'parse_failed')
         }
       } catch (err) {
         console.error('Voice parse error:', err)
