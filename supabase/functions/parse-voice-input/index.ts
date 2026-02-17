@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       throw new Error('GEMINI_API_KEY is not set')
     }
 
-    const { transcript, tracker_type, language, timezone } = await req.json()
+    const { transcript, tracker_type, language, timezone, local_time } = await req.json()
 
     if (!transcript || typeof transcript !== 'string') {
       return new Response(
@@ -81,11 +81,16 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Format current time in user's timezone so Gemini interprets relative/ambiguous times correctly
-    const userTimezone = timezone || 'UTC'
-    const now = new Date()
-    const currentTimeLocal = now.toLocaleString('en-US', { timeZone: userTimezone, dateStyle: 'full', timeStyle: 'long' })
-    const currentTime = `${currentTimeLocal} (timezone: ${userTimezone})`
+    // Use the client's local time directly (most reliable) or fall back to server-side conversion
+    let currentTime: string
+    if (local_time) {
+      currentTime = `${local_time} (timezone: ${timezone || 'unknown'})`
+    } else {
+      const userTimezone = timezone || 'UTC'
+      const now = new Date()
+      const currentTimeLocal = now.toLocaleString('en-US', { timeZone: userTimezone, dateStyle: 'full', timeStyle: 'long' })
+      currentTime = `${currentTimeLocal} (timezone: ${userTimezone})`
+    }
     const systemPrompt = buildSystemPrompt(tracker_type, currentTime)
 
     // Call Gemini API with retry and model fallback

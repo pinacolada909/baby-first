@@ -53,8 +53,12 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
   const callParseAPI = useCallback(async (text: string) => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      // Send browser's local time directly so the server doesn't need to compute it
+      const now = new Date()
+      const pad = (n: number) => n.toString().padStart(2, '0')
+      const localTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
       const { data, error: fnError } = await supabase.functions.invoke('parse-voice-input', {
-        body: { transcript: text, tracker_type: trackerType, language, timezone },
+        body: { transcript: text, tracker_type: trackerType, language, timezone, local_time: localTime },
       })
 
       if (fnError) {
