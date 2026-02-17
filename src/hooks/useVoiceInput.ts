@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
@@ -30,7 +30,9 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
   const [parsedData, setParsedData] = useState<ParsedFormData | null>(null)
   const [confidence, setConfidence] = useState<'high' | 'medium' | 'low' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [stopped, setStopped] = useState(false)
   const parsingRef = useRef(false)
+  const transcriptRef = useRef('')
 
   const {
     transcript,
@@ -39,21 +41,8 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition()
 
-  const startListening = useCallback(() => {
-    setError(null)
-    setParsedData(null)
-    setConfidence(null)
-    resetTranscript()
-
-    const lang = language === 'zh' ? 'zh-CN' : 'en-US'
-
-    SpeechRecognition.startListening({
-      continuous: true,
-      language: lang,
-    }).catch(() => {
-      setError('mic_permission_denied')
-    })
-  }, [language, resetTranscript])
+  // Keep transcript ref in sync
+  transcriptRef.current = transcript
 
   const parseTranscript = useCallback(
     async (text: string) => {
@@ -89,19 +78,33 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
     [trackerType, language],
   )
 
-  const stopAndParse = useCallback(() => {
-    SpeechRecognition.stopListening()
-    // Parse will be triggered by the effect below when listening stops
-  }, [])
+  const startListening = useCallback(() => {
+    setError(null)
+    setParsedData(null)
+    setConfidence(null)
+    setStopped(false)
+    resetTranscript()
 
-  // When listening stops and we have a transcript, parse it
-  const prevListening = useRef(false)
-  useEffect(() => {
-    if (prevListening.current && !isListening && transcript.trim()) {
-      parseTranscript(transcript)
+    const lang = language === 'zh' ? 'zh-CN' : 'en-US'
+
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: lang,
+    }).catch(() => {
+      setError('mic_permission_denied')
+    })
+  }, [language, resetTranscript])
+
+  const stopAndParse = useCallback(() => {
+    SpeechRecognition.abortListening()
+    setStopped(true)
+
+    // Grab the transcript directly from the ref and parse it
+    const currentTranscript = transcriptRef.current
+    if (currentTranscript.trim()) {
+      parseTranscript(currentTranscript)
     }
-    prevListening.current = isListening
-  }, [isListening, transcript, parseTranscript])
+  }, [parseTranscript])
 
   const clear = useCallback(() => {
     resetTranscript()
@@ -109,10 +112,12 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
     setConfidence(null)
     setError(null)
     setIsParsing(false)
+    setStopped(false)
   }, [resetTranscript])
 
   return {
-    isListening,
+    // When stopped, override isListening to false immediately
+    isListening: stopped ? false : isListening,
     transcript,
     browserSupported: browserSupportsSpeechRecognition,
     isParsing,
