@@ -31,10 +31,9 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
   )
 
   const {
-    isListening,
+    state,
     transcript,
     browserSupported,
-    isParsing,
     startListening,
     stopAndParse,
     error,
@@ -70,7 +69,7 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
 
   const hintKey = `voice.hint.${trackerType}` as 'voice.hint.sleep' | 'voice.hint.feeding' | 'voice.hint.diaper'
 
-  if (isParsing) {
+  if (state === 'parsing') {
     return (
       <div className="space-y-2">
         <Button variant="outline" disabled className="shrink-0">
@@ -81,7 +80,7 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
     )
   }
 
-  if (isListening) {
+  if (state === 'listening') {
     return (
       <div className="space-y-2">
         <Button
