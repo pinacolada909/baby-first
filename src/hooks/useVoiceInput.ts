@@ -45,58 +45,6 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
   // Keep transcript ref in sync
   transcriptRef.current = transcript
 
-  const parseTranscript = useCallback(
-    async (text: string) => {
-      if (!text.trim() || parsingRef.current) return
-
-      parsingRef.current = true
-      setIsParsing(true)
-      setError(null)
-
-      try {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-        const { data, error: fnError } = await supabase.functions.invoke('parse-voice-input', {
-          body: { transcript: text, tracker_type: trackerType, language, timezone },
-        })
-
-        if (fnError) {
-          console.error('Edge function error:', fnError)
-          // Try to extract the JSON body from FunctionsHttpError
-          let errorBody: { error?: string } | null = null
-          try {
-            if ('context' in fnError && (fnError as { context: { json: () => Promise<unknown> } }).context?.json) {
-              errorBody = await (fnError as { context: { json: () => Promise<{ error?: string }> } }).context.json()
-            }
-          } catch {
-            // ignore parsing errors
-          }
-          const errorMsg = errorBody?.error || ''
-          if (errorMsg.includes('rate') || errorMsg.includes('429')) {
-            setError('rate_limited')
-          } else {
-            setError('network_error')
-          }
-          return
-        }
-
-        if (data?.success && data.data) {
-          onParsedRef.current(data.data, data.confidence || 'medium')
-        } else {
-          console.error('Parse failed, response:', data)
-          const errorMsg = data?.error || ''
-          setError(errorMsg.includes('rate') || errorMsg.includes('429') ? 'rate_limited' : 'parse_failed')
-        }
-      } catch (err) {
-        console.error('Voice parse error:', err)
-        setError('network_error')
-      } finally {
-        setIsParsing(false)
-        parsingRef.current = false
-      }
-    },
-    [trackerType, language],
-  )
-
   const startListening = useCallback(() => {
     setError(null)
     setStopped(false)
@@ -113,15 +61,64 @@ export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceIn
   }, [language, resetTranscript])
 
   const stopAndParse = useCallback(() => {
+    // Grab transcript before aborting
+    const currentTranscript = transcriptRef.current
+
     SpeechRecognition.abortListening()
     setStopped(true)
 
-    // Grab the transcript directly from the ref and parse it
-    const currentTranscript = transcriptRef.current
     if (currentTranscript.trim()) {
-      parseTranscript(currentTranscript)
+      // Set parsing state immediately so the UI transitions
+      // from listening → processing in the same render batch
+      parsingRef.current = true
+      setIsParsing(true)
+      setError(null)
+
+      // Run the actual parsing (skip the guards since we set them above)
+      const doParseAsync = async () => {
+        try {
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+          const { data, error: fnError } = await supabase.functions.invoke('parse-voice-input', {
+            body: { transcript: currentTranscript, tracker_type: trackerType, language, timezone },
+          })
+
+          if (fnError) {
+            console.error('Edge function error:', fnError)
+            let errorBody: { error?: string } | null = null
+            try {
+              if ('context' in fnError && (fnError as { context: { json: () => Promise<unknown> } }).context?.json) {
+                errorBody = await (fnError as { context: { json: () => Promise<{ error?: string }> } }).context.json()
+              }
+            } catch {
+              // ignore parsing errors
+            }
+            const errorMsg = errorBody?.error || ''
+            if (errorMsg.includes('rate') || errorMsg.includes('429')) {
+              setError('rate_limited')
+            } else {
+              setError('network_error')
+            }
+            return
+          }
+
+          if (data?.success && data.data) {
+            onParsedRef.current(data.data, data.confidence || 'medium')
+          } else {
+            console.error('Parse failed, response:', data)
+            const errorMsg = data?.error || ''
+            setError(errorMsg.includes('rate') || errorMsg.includes('429') ? 'rate_limited' : 'parse_failed')
+          }
+        } catch (err) {
+          console.error('Voice parse error:', err)
+          setError('network_error')
+        } finally {
+          setIsParsing(false)
+          parsingRef.current = false
+        }
+      }
+      doParseAsync()
     }
-  }, [parseTranscript])
+  }, [trackerType, language])
 
   return {
     // When stopped, override isListening to false immediately
