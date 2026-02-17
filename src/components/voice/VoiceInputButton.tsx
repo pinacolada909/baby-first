@@ -74,60 +74,54 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
 
   const hintKey = `voice.hint.${trackerType}` as 'voice.hint.sleep' | 'voice.hint.feeding' | 'voice.hint.diaper'
 
-  const handleClick = () => {
-    if (isListening) {
-      stopAndParse()
-    } else {
-      startListening()
-    }
+  if (isParsing) {
+    return (
+      <div className="space-y-2">
+        <Button variant="outline" disabled className="shrink-0">
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          {t('voice.processing')}
+        </Button>
+      </div>
+    )
+  }
+
+  if (isListening) {
+    return (
+      <div className="space-y-2">
+        <Button
+          variant="destructive"
+          onClick={stopAndParse}
+          className="shrink-0 animate-pulse"
+        >
+          <MicOff className="h-4 w-4 mr-2" />
+          {t('voice.stop')}
+        </Button>
+
+        {/* Live transcript preview */}
+        {transcript && (
+          <p className="text-xs text-muted-foreground italic rounded bg-muted/50 px-2 py-1">
+            {transcript}
+          </p>
+        )}
+      </div>
+    )
   }
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Button
-          variant={isListening ? 'destructive' : 'outline'}
-          size="icon"
-          onClick={handleClick}
-          disabled={disabled || isParsing}
-          title={isListening ? t('voice.stop') : t('voice.start')}
-          className={`shrink-0 ${isListening ? 'animate-pulse ring-2 ring-red-400' : ''}`}
-        >
-          {isParsing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : isListening ? (
-            <MicOff className="h-4 w-4" />
-          ) : (
-            <Mic className="h-4 w-4" />
-          )}
-        </Button>
-
-        {isListening && (
-          <span className="text-sm text-red-500 font-medium animate-pulse">
-            {t('voice.listening')}
-          </span>
-        )}
-
-        {isParsing && (
-          <span className="text-sm text-muted-foreground">
-            {t('voice.processing')}
-          </span>
-        )}
-      </div>
-
-      {/* Live transcript preview */}
-      {(isListening || transcript) && !isParsing && (
-        <p className="text-xs text-muted-foreground italic rounded bg-muted/50 px-2 py-1">
-          {transcript || t(hintKey)}
-        </p>
-      )}
-
-      {/* Hint text when idle */}
-      {!isListening && !transcript && !isParsing && (
-        <p className="text-xs text-muted-foreground">
-          {t(hintKey)}
-        </p>
-      )}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={startListening}
+        disabled={disabled}
+        title={t('voice.start')}
+        className="shrink-0"
+      >
+        <Mic className="h-4 w-4" />
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        {t(hintKey)}
+      </p>
     </div>
   )
 }
