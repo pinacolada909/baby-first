@@ -4,6 +4,10 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import type { TrackerType, ParsedFormData } from '@/types'
 
+interface UseVoiceInputOptions {
+  onParsed: (data: ParsedFormData, confidence: 'high' | 'medium' | 'low') => void
+}
+
 interface UseVoiceInputReturn {
   // Speech recognition state
   isListening: boolean
@@ -12,27 +16,24 @@ interface UseVoiceInputReturn {
 
   // Parsing state
   isParsing: boolean
-  parsedData: ParsedFormData | null
-  confidence: 'high' | 'medium' | 'low' | null
 
   // Actions
   startListening: () => void
   stopAndParse: () => void
-  clear: () => void
 
   // Errors
   error: string | null
 }
 
-export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
+export function useVoiceInput(trackerType: TrackerType, { onParsed }: UseVoiceInputOptions): UseVoiceInputReturn {
   const { language } = useLanguage()
   const [isParsing, setIsParsing] = useState(false)
-  const [parsedData, setParsedData] = useState<ParsedFormData | null>(null)
-  const [confidence, setConfidence] = useState<'high' | 'medium' | 'low' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [stopped, setStopped] = useState(false)
   const parsingRef = useRef(false)
   const transcriptRef = useRef('')
+  const onParsedRef = useRef(onParsed)
+  onParsedRef.current = onParsed
 
   const {
     transcript,
@@ -78,8 +79,7 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
         }
 
         if (data?.success && data.data) {
-          setParsedData(data.data)
-          setConfidence(data.confidence || 'medium')
+          onParsedRef.current(data.data, data.confidence || 'medium')
         } else {
           console.error('Parse failed, response:', data)
           const errorMsg = data?.error || ''
@@ -98,8 +98,6 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
 
   const startListening = useCallback(() => {
     setError(null)
-    setParsedData(null)
-    setConfidence(null)
     setStopped(false)
     resetTranscript()
 
@@ -124,26 +122,14 @@ export function useVoiceInput(trackerType: TrackerType): UseVoiceInputReturn {
     }
   }, [parseTranscript])
 
-  const clear = useCallback(() => {
-    resetTranscript()
-    setParsedData(null)
-    setConfidence(null)
-    setError(null)
-    setIsParsing(false)
-    setStopped(false)
-  }, [resetTranscript])
-
   return {
     // When stopped, override isListening to false immediately
     isListening: stopped ? false : isListening,
     transcript,
     browserSupported: browserSupportsSpeechRecognition,
     isParsing,
-    parsedData,
-    confidence,
     startListening,
     stopAndParse,
-    clear,
     error,
   }
 }

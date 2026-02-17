@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useVoiceInput } from '@/hooks/useVoiceInput'
 import { Button } from '@/components/ui/button'
@@ -14,23 +14,10 @@ interface VoiceInputButtonProps {
 
 export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInputButtonProps) {
   const { t } = useLanguage()
-  const {
-    isListening,
-    transcript,
-    browserSupported,
-    isParsing,
-    parsedData,
-    confidence,
-    startListening,
-    stopAndParse,
-    clear,
-    error,
-  } = useVoiceInput(trackerType)
 
-  // Handle parsed data
-  useEffect(() => {
-    if (parsedData) {
-      onParsed(parsedData)
+  const handleParsed = useCallback(
+    (data: ParsedFormData, confidence: 'high' | 'medium' | 'low') => {
+      onParsed(data)
 
       if (confidence === 'high') {
         toast.success(t('voice.parsed'))
@@ -39,11 +26,19 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
       } else if (confidence === 'low') {
         toast.warning(t('voice.confidence.low'))
       }
+    },
+    [onParsed, t],
+  )
 
-      // Clear after delivering parsed data
-      clear()
-    }
-  }, [parsedData, confidence, onParsed, t, clear])
+  const {
+    isListening,
+    transcript,
+    browserSupported,
+    isParsing,
+    startListening,
+    stopAndParse,
+    error,
+  } = useVoiceInput(trackerType, { onParsed: handleParsed })
 
   // Handle errors
   useEffect(() => {
