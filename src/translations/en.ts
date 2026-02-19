@@ -52,7 +52,7 @@ export const en = {
 
   // Home
   'home.hero.title': 'Navigate Early Parenthood with Confidence',
-  'home.hero.subtitle': 'Track, learn, and coordinate care for your newborn in the first 3 months with ease and gentleness.',
+  'home.hero.subtitle': 'Track, learn, and coordinate care for your newborn in the first 6 months with ease and gentleness.',
   'home.hero.cta': 'Get Started',
   'home.stats.questions': '150+ Questions',
   'home.stats.questions.desc': 'Expert answers ready whenever you need them',
@@ -76,7 +76,7 @@ export const en = {
   'home.email.sample.attachment': 'CSV ATTACHED',
   'home.email.handled': 'HANDLED WITH LOVE',
   'home.cta.title': 'Ready to start?',
-  'home.cta.subtitle': 'Sign up to save your data and sync across caregivers. Make the first 3 months a journey you\'ll cherish.',
+  'home.cta.subtitle': 'Sign up to save your data and sync across caregivers. Make the first 6 months a journey you\'ll cherish.',
   'home.cta.button': 'Create Account',
 
   // Feature cards

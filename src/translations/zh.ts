@@ -54,7 +54,7 @@ export const zh: Record<TranslationKey, string> = {
 
   // Home
   'home.hero.title': '自信地迎接育儿之旅',
-  'home.hero.subtitle': '在宝宝出生后的前三个月，轻柔地追踪、学习并协调照护',
+  'home.hero.subtitle': '在宝宝出生后的前六个月，轻柔地追踪、学习并协调照护',
   'home.hero.cta': '开始使用',
   'home.stats.questions': '150+ 问题',
   'home.stats.questions.desc': '专家答案随时为你准备',
@@ -63,7 +63,7 @@ export const zh: Record<TranslationKey, string> = {
   'home.stats.saved': '每周节省10小时',
   'home.stats.saved.desc': '更好的协调，轻松照护',
   'home.features.title': '你需要的一切',
-  'home.features.subtitle': '为珍贵的前三个月精心设计的全方位工具',
+  'home.features.subtitle': '为珍贵的前六个月精心设计的全方位工具',
   'home.email.title': '每日总结邮件',
   'home.email.subtitle': '每天晚上收到一封温馨的每日报告，包含所有追踪数据和CSV导出。就像一封来自你一天的情书。',
   'home.email.diary.tab': '今日日记',
@@ -78,7 +78,7 @@ export const zh: Record<TranslationKey, string> = {
   'home.email.sample.attachment': '已附CSV文件',
   'home.email.handled': '用爱呵护',
   'home.cta.title': '准备好了吗？',
-  'home.cta.subtitle': '注册以保存数据并在照护者之间同步。让前三个月成为你珍藏的旅程。',
+  'home.cta.subtitle': '注册以保存数据并在照护者之间同步。让前六个月成为你珍藏的旅程。',
   'home.cta.button': '创建账号',
 
   // Feature cards
