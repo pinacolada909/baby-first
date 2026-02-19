@@ -7,7 +7,7 @@ export const zh: Record<TranslationKey, string> = {
   'nav.sleep': '睡眠',
   'nav.diaper': '尿布',
   'nav.feeding': '喂养',
-  'nav.time': '仪表盘',
+  'nav.time': '分工看板',
   'nav.growth': '成长',
   'nav.settings': '设置',
 
@@ -181,7 +181,7 @@ export const zh: Record<TranslationKey, string> = {
   'feeding.min': '分钟',
 
   // Activity Dashboard
-  'dashboard.title': '活动仪表盘',
+  'dashboard.title': '分工看板',
   'dashboard.subtitle': '查看谁做了什么，协调照护',
   'dashboard.range.today': '今天',
   'dashboard.range.week': '本周',
