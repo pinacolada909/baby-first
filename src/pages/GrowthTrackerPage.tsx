@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Ruler, Trash2, Check } from 'lucide-react'
 import { toast } from 'sonner'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 function formatDateLocal(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -270,7 +270,7 @@ export function GrowthTrackerPage() {
         </CardContent>
       </Card>
 
-      {/* Growth Chart */}
+      {/* Growth Charts */}
       <Card>
         <CardContent className="p-6">
           <h2 className="mb-4 text-lg font-semibold">{t('growth.chart')}</h2>
@@ -282,38 +282,76 @@ export function GrowthTrackerPage() {
             </TabsList>
             <TabsContent value={chartPeriod}>
               {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={chartData}>
-                    <XAxis dataKey="label" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="weight"
-                      stroke="#14b8a6"
-                      name={t('growth.weight')}
-                      connectNulls
-                      dot={{ r: 4 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="height"
-                      stroke="#f59e0b"
-                      name={t('growth.height')}
-                      connectNulls
-                      dot={{ r: 4 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="head"
-                      stroke="#8b5cf6"
-                      name={t('growth.head')}
-                      connectNulls
-                      dot={{ r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="space-y-6">
+                  {/* Weight Chart */}
+                  {chartData.some((d) => d.weight != null) && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-teal-600">{t('growth.weight')}</h3>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <LineChart data={chartData}>
+                          <XAxis dataKey="label" fontSize={12} />
+                          <YAxis fontSize={12} domain={['auto', 'auto']} unit=" kg" width={55} />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="weight"
+                            stroke="#14b8a6"
+                            strokeWidth={2}
+                            name={t('growth.weight')}
+                            connectNulls
+                            dot={{ r: 4, fill: '#14b8a6' }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {/* Height Chart */}
+                  {chartData.some((d) => d.height != null) && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-amber-600">{t('growth.height')}</h3>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <LineChart data={chartData}>
+                          <XAxis dataKey="label" fontSize={12} />
+                          <YAxis fontSize={12} domain={['auto', 'auto']} unit=" cm" width={55} />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="height"
+                            stroke="#f59e0b"
+                            strokeWidth={2}
+                            name={t('growth.height')}
+                            connectNulls
+                            dot={{ r: 4, fill: '#f59e0b' }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {/* Head Circumference Chart */}
+                  {chartData.some((d) => d.head != null) && (
+                    <div>
+                      <h3 className="mb-2 text-sm font-medium text-violet-600">{t('growth.head')}</h3>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <LineChart data={chartData}>
+                          <XAxis dataKey="label" fontSize={12} />
+                          <YAxis fontSize={12} domain={['auto', 'auto']} unit=" cm" width={55} />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="head"
+                            stroke="#8b5cf6"
+                            strokeWidth={2}
+                            name={t('growth.head')}
+                            connectNulls
+                            dot={{ r: 4, fill: '#8b5cf6' }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <p className="py-8 text-center text-muted-foreground">{t('common.noData')}</p>
               )}
