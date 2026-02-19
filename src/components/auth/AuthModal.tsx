@@ -37,7 +37,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {view === 'forgotPassword' ? t('auth.forgotPassword.title') : 'BabyFirst'}
+            {view === 'forgotPassword' ? t('auth.forgotPassword.title') : 'BabyStep'}
           </DialogTitle>
           <DialogDescription>
             {view === 'forgotPassword' ? t('auth.forgotPassword.description') : t('auth.demo.login')}

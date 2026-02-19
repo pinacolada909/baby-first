@@ -1,6 +1,6 @@
-# BabyFirst Development Tasks - Full Session Summary
+# BabyStep Development Tasks - Full Session Summary
 
-## Project: BabyFirst (宝宝第一)
+## Project: BabyStep
 **Tech Stack:** React 18, TypeScript, Vite, Tailwind CSS v4, shadcn/ui, TanStack Query, Supabase (auth + DB), Recharts
 **Deployed at:** https://baby-first-iota.vercel.app/
 **GitHub:** https://github.com/pinacolada909/baby-first

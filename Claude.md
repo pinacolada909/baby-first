@@ -4,19 +4,19 @@ Let me also check the translations, authentication system, and database schema t
 
 Let me also check the CaregiverManager component to understand the caregiver management flow.
 
-I now have a comprehensive understanding of the BabyFirst application. Let me create the PRD for you.
+I now have a comprehensive understanding of the BabyStep application. Let me create the PRD for you.
 
 ---
 
-# BabyFirst - Product Requirements Document (PRD)
+# BabyStep - Product Requirements Document (PRD)
 
 ## 1. Executive Summary
 
-**Product Name:** BabyFirst (宝宝第一)
+**Product Name:** BabyStep
 
 **Tagline:** "Navigate Early Parenthood with Confidence"
 
-**Overview:** BabyFirst is a comprehensive web application designed to help new parents navigate the first 3 months of their newborn's life. The app provides expert guidance, tracking tools for sleep, feeding, and diaper changes, as well as time management features to help multiple caregivers coordinate and ensure adequate rest.
+**Overview:** BabyStep is a comprehensive web application designed to help new parents navigate the first 3 months of their newborn's life. The app provides expert guidance, tracking tools for sleep, feeding, and diaper changes, as well as time management features to help multiple caregivers coordinate and ensure adequate rest.
 
 **Target Users:** First-time parents and caregivers of newborns (0-3 months)
 

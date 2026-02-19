@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { sanitizeErrorMessage } from '@/lib/utils'
 import { toast } from 'sonner'
 
-const STORAGE_KEY = 'babyfirst-pending-signup-action'
+const STORAGE_KEY = 'babystep-pending-signup-action'
 
 type PendingAction =
   | { type: 'create_baby'; babyName: string; displayName: string }

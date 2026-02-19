@@ -37,7 +37,7 @@ export function BabyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (babies.length > 0 && !selectedBaby) {
-      const storedId = localStorage.getItem('babyfirst-selected-baby')
+      const storedId = localStorage.getItem('babystep-selected-baby')
       const found = babies.find(b => b.id === storedId)
       setSelectedBaby(found ?? babies[0])
     }
@@ -48,7 +48,7 @@ export function BabyProvider({ children }: { children: ReactNode }) {
 
   const handleSelect = useCallback((baby: Baby | null) => {
     setSelectedBaby(baby)
-    if (baby) localStorage.setItem('babyfirst-selected-baby', baby.id)
+    if (baby) localStorage.setItem('babystep-selected-baby', baby.id)
   }, [])
 
   return (

@@ -54,7 +54,7 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
       <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         {/* Left: App name */}
         <NavLink to="/" className="text-lg font-bold tracking-tight text-[#a78bfa]">
-          BabyFirst
+          BabyStep
         </NavLink>
 
         {/* Center: Nav links */}

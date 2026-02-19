@@ -12,13 +12,13 @@ const LanguageContext = createContext<LanguageContextType | null>(null)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
-    const stored = localStorage.getItem('babyfirst-lang')
+    const stored = localStorage.getItem('babystep-lang')
     return (stored === 'zh' ? 'zh' : 'en') as Language
   })
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang)
-    localStorage.setItem('babyfirst-lang', lang)
+    localStorage.setItem('babystep-lang', lang)
   }
 
   const translate = (key: TranslationKey) => t(key, language)

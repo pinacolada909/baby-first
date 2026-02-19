@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
 
         // Send email with Resend
         const { error: emailError } = await resend.emails.send({
-          from: 'BabyFirst <onboarding@resend.dev>',
+          from: 'BabyStep <onboarding@resend.dev>',
           to: userEmail,
           subject: `Daily Summary for ${babyNames} - ${dateStr}`,
           html: `
@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
             <p>Detailed CSV files are attached below.</p>
 
             <p style="color: #666; font-size: 12px;">
-              This email was sent by BabyFirst.
+              This email was sent by BabyStep.
               You can disable daily summaries in the app settings.
             </p>
           `,
