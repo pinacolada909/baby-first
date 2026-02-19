@@ -62,7 +62,7 @@ export function GrowthTrackerPage() {
   // Latest measurement
   const latest = records.length > 0 ? records[0] : null
 
-  // Chart data
+  // Chart data — deduplicate by date, keeping the latest entry per day
   const chartData = useMemo(() => {
     const now = new Date()
     let startDate: Date
@@ -73,18 +73,27 @@ export function GrowthTrackerPage() {
     } else {
       startDate = new Date(now.getTime() - 180 * 86400000)
     }
-    return records
+    const filtered = records
       .filter((r) => new Date(r.measured_at) >= startDate)
       .sort((a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime())
-      .map((r) => {
-        const d = new Date(r.measured_at)
-        return {
-          label: `${d.getMonth() + 1}/${d.getDate()}`,
-          weight: r.weight_kg,
-          height: r.height_cm,
-          head: r.head_cm,
-        }
-      })
+
+    // Keep only the latest record per calendar date
+    const byDate = new Map<string, typeof filtered[0]>()
+    for (const r of filtered) {
+      const d = new Date(r.measured_at)
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+      byDate.set(key, r) // later entry overwrites earlier one
+    }
+
+    return Array.from(byDate.values()).map((r) => {
+      const d = new Date(r.measured_at)
+      return {
+        label: `${d.getMonth() + 1}/${d.getDate()}`,
+        weight: r.weight_kg,
+        height: r.height_cm,
+        head: r.head_cm,
+      }
+    })
   }, [records, chartPeriod])
 
   // Milestone lookup
