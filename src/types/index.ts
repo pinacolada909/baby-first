@@ -116,8 +116,29 @@ export interface CareTask {
   created_at: string
 }
 
+// Growth & Milestones
+export interface GrowthRecord {
+  id: string
+  baby_id: string
+  caregiver_id: string
+  measured_at: string
+  weight_kg: number | null
+  height_cm: number | null
+  head_cm: number | null
+  notes: string | null
+  created_at: string
+}
+
+export interface MilestoneRecord {
+  id: string
+  baby_id: string
+  milestone_key: string
+  achieved_at: string
+  created_at: string
+}
+
 // Voice Input Types
-export type TrackerType = 'sleep' | 'feeding' | 'diaper'
+export type TrackerType = 'sleep' | 'feeding' | 'diaper' | 'growth'
 
 export interface ParsedSleepData {
   start_time: string | null
@@ -139,4 +160,12 @@ export interface ParsedDiaperData {
   notes: string | null
 }
 
-export type ParsedFormData = ParsedSleepData | ParsedFeedingData | ParsedDiaperData
+export interface ParsedGrowthData {
+  date: string | null
+  weight_kg: number | null
+  height_cm: number | null
+  head_cm: number | null
+  notes: string | null
+}
+
+export type ParsedFormData = ParsedSleepData | ParsedFeedingData | ParsedDiaperData | ParsedGrowthData

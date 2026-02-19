@@ -67,7 +67,7 @@ export function VoiceInputButton({ trackerType, onParsed, disabled }: VoiceInput
     )
   }
 
-  const hintKey = `voice.hint.${trackerType}` as 'voice.hint.sleep' | 'voice.hint.feeding' | 'voice.hint.diaper'
+  const hintKey = `voice.hint.${trackerType}` as 'voice.hint.sleep' | 'voice.hint.feeding' | 'voice.hint.diaper' | 'voice.hint.growth'
 
   if (state === 'parsing') {
     return (

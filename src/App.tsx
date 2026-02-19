@@ -12,6 +12,7 @@ import { SleepTrackerPage } from '@/pages/SleepTrackerPage'
 import { DiaperTrackerPage } from '@/pages/DiaperTrackerPage'
 import { FeedingTrackerPage } from '@/pages/FeedingTrackerPage'
 import { ActivityDashboardPage } from '@/pages/ActivityDashboardPage'
+import { GrowthTrackerPage } from '@/pages/GrowthTrackerPage'
 import { JoinBabyPage } from '@/pages/JoinBabyPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 
@@ -39,6 +40,7 @@ export default function App() {
                   <Route path="/diaper-tracker" element={<DiaperTrackerPage />} />
                   <Route path="/feeding-tracker" element={<FeedingTrackerPage />} />
                   <Route path="/time-management" element={<ActivityDashboardPage />} />
+                  <Route path="/growth" element={<GrowthTrackerPage />} />
                   <Route path="/join" element={<JoinBabyPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Route>

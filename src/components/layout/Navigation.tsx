@@ -6,6 +6,7 @@ import {
   Baby,
   UtensilsCrossed,
   Clock,
+  Ruler,
   LogIn,
   LogOut,
   User,
@@ -36,6 +37,7 @@ const navLinks: { to: string; labelKey: TranslationKey; icon: typeof Home }[] = 
   { to: '/diaper-tracker', labelKey: 'nav.diaper', icon: Baby },
   { to: '/feeding-tracker', labelKey: 'nav.feeding', icon: UtensilsCrossed },
   { to: '/time-management', labelKey: 'nav.time', icon: Clock },
+  { to: '/growth', labelKey: 'nav.growth', icon: Ruler },
 ]
 
 export function Navigation({ onOpenAuth }: NavigationProps) {

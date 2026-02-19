@@ -28,6 +28,12 @@ export const queryKeys = {
   careTasks: {
     byBaby: (babyId: string) => ['careTasks', babyId] as const,
   },
+  growth: {
+    byBaby: (babyId: string) => ['growth', babyId] as const,
+  },
+  milestones: {
+    byBaby: (babyId: string) => ['milestones', babyId] as const,
+  },
   profile: {
     byUser: (userId: string) => ['profile', userId] as const,
   },

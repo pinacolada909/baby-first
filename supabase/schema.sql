@@ -524,3 +524,78 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.diaper_changes;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.feedings;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.time_blocks;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.care_tasks;
+
+-- ============================================================
+-- 10. GROWTH RECORDS & MILESTONES
+-- ============================================================
+
+-- ---- growth_records ----
+CREATE TABLE public.growth_records (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id      UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  measured_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  weight_kg    DOUBLE PRECISION,
+  height_cm    DOUBLE PRECISION,
+  head_cm      DOUBLE PRECISION,
+  notes        TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.growth_records ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "growth_records_select"
+  ON public.growth_records FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "growth_records_insert"
+  ON public.growth_records FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "growth_records_delete"
+  ON public.growth_records FOR DELETE
+  TO authenticated
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
+
+CREATE INDEX idx_growth_records_baby_id ON public.growth_records (baby_id);
+CREATE INDEX idx_growth_records_measured_at ON public.growth_records (measured_at);
+
+-- ---- milestones ----
+CREATE TABLE public.milestones (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id       UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  milestone_key TEXT NOT NULL,
+  achieved_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(baby_id, milestone_key)
+);
+
+ALTER TABLE public.milestones ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "milestones_select"
+  ON public.milestones FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "milestones_insert"
+  ON public.milestones FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "milestones_delete"
+  ON public.milestones FOR DELETE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE INDEX idx_milestones_baby_id ON public.milestones (baby_id);
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.growth_records;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.milestones;

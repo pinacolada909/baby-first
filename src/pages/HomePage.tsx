@@ -10,6 +10,7 @@ import {
   Baby,
   Utensils,
   Clock,
+  Ruler,
   Mail,
   Paperclip,
   TrendingUp,
@@ -65,6 +66,16 @@ const FEATURES = [
     iconBg: 'bg-amber-100',
     borderColor: 'border-[#fde68a]',
     hoverBg: 'hover:bg-[#fef9c3]/30',
+  },
+  {
+    titleKey: 'feature.growth.title' as const,
+    descKey: 'feature.growth.desc' as const,
+    icon: Ruler,
+    route: '/growth',
+    iconColor: 'text-teal-500',
+    iconBg: 'bg-teal-100',
+    borderColor: 'border-[#99f6e4]',
+    hoverBg: 'hover:bg-[#ccfbf1]/30',
   },
 ]
 
