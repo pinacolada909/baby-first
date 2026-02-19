@@ -7,7 +7,7 @@ import { useMilestones, useToggleMilestone } from '@/hooks/useMilestones'
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import { MILESTONE_GROUPS } from '@/data/milestones'
+import { MILESTONE_GROUPS, CATEGORY_STYLES } from '@/data/milestones'
 import type { GrowthRecord, BabyCaregiver, MilestoneRecord, ParsedGrowthData } from '@/types'
 import { VoiceInputButton } from '@/components/voice/VoiceInputButton'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,9 +15,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Ruler, Trash2, Check } from 'lucide-react'
+import { Ruler, Trash2, Heart, Eye, PersonStanding, Ear, Hand, MessageCircle, Smile, Laugh, Dumbbell, RotateCw, Armchair, Search, Utensils, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+
+// Icon map for milestone cards — static, no need to recreate per render
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Eye, PersonStanding, Ear, Hand, Smile, MessageCircle, Laugh, Dumbbell,
+  RotateCw, Armchair, Search, Utensils, ShieldAlert,
+}
 
 function formatDateLocal(date: Date): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -58,6 +64,8 @@ export function GrowthTrackerPage() {
   const [head, setHead] = useState('')
   const [notes, setNotes] = useState('')
   const [chartPeriod, setChartPeriod] = useState('3m')
+  const [milestoneTab, setMilestoneTab] = useState(0)
+  const [togglingKeys, setTogglingKeys] = useState<Set<string>>(new Set())
 
   // Latest measurement
   const latest = records.length > 0 ? records[0] : null
@@ -108,62 +116,92 @@ export function GrowthTrackerPage() {
       return
     }
 
+    const w = weight ? parseFloat(weight) : null
+    const h = height ? parseFloat(height) : null
+    const hc = head ? parseFloat(head) : null
+
+    // Guard against NaN from bad input
+    if ((w != null && isNaN(w)) || (h != null && isNaN(h)) || (hc != null && isNaN(hc))) {
+      toast.error(t('common.error'))
+      return
+    }
+
     const record = {
       baby_id: babyId ?? 'demo',
       caregiver_id: user?.id ?? 'demo',
       measured_at: new Date(date).toISOString(),
-      weight_kg: weight ? parseFloat(weight) : null,
-      height_cm: height ? parseFloat(height) : null,
-      head_cm: head ? parseFloat(head) : null,
+      weight_kg: w,
+      height_cm: h,
+      head_cm: hc,
       notes: notes || null,
     }
 
-    if (isDemo) {
-      setDemoRecords((prev) => [
-        { ...record, id: crypto.randomUUID(), created_at: new Date().toISOString() },
-        ...prev,
-      ])
-    } else {
-      await addMutation.mutateAsync(record)
+    try {
+      if (isDemo) {
+        setDemoRecords((prev) => [
+          { ...record, id: crypto.randomUUID(), created_at: new Date().toISOString() },
+          ...prev,
+        ])
+      } else {
+        await addMutation.mutateAsync(record)
+      }
+      setWeight('')
+      setHeight('')
+      setHead('')
+      setNotes('')
+      setDate(formatDateLocal(new Date()))
+      toast.success(t('growth.added'))
+    } catch {
+      toast.error(t('common.error'))
     }
-    setWeight('')
-    setHeight('')
-    setHead('')
-    setNotes('')
-    setDate(formatDateLocal(new Date()))
-    toast.success(t('growth.added'))
   }
 
   const handleDelete = async (id: string) => {
-    if (isDemo) {
-      setDemoRecords((prev) => prev.filter((r) => r.id !== id))
-    } else {
-      await deleteMutation.mutateAsync({ id, babyId: babyId! })
+    try {
+      if (isDemo) {
+        setDemoRecords((prev) => prev.filter((r) => r.id !== id))
+      } else {
+        await deleteMutation.mutateAsync({ id, babyId: babyId! })
+      }
+      toast.success(t('growth.deleted'))
+    } catch {
+      toast.error(t('common.error'))
     }
-    toast.success(t('growth.deleted'))
   }
 
   const handleToggleMilestone = async (key: string, currentlyAchieved: boolean) => {
-    if (isDemo) {
-      if (currentlyAchieved) {
-        setDemoMilestones((prev) => prev.filter((m) => m.milestone_key !== key))
+    if (togglingKeys.has(key)) return // prevent double-click race
+    setTogglingKeys((prev) => new Set(prev).add(key))
+    try {
+      if (isDemo) {
+        if (currentlyAchieved) {
+          setDemoMilestones((prev) => prev.filter((m) => m.milestone_key !== key))
+        } else {
+          setDemoMilestones((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              baby_id: 'demo',
+              milestone_key: key,
+              achieved_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+            },
+          ])
+        }
       } else {
-        setDemoMilestones((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            baby_id: 'demo',
-            milestone_key: key,
-            achieved_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-          },
-        ])
+        await toggleMilestone.mutateAsync({
+          babyId: babyId!,
+          milestoneKey: key,
+          achieved: !currentlyAchieved,
+        })
       }
-    } else {
-      await toggleMilestone.mutateAsync({
-        babyId: babyId!,
-        milestoneKey: key,
-        achieved: !currentlyAchieved,
+    } catch {
+      toast.error(t('common.error'))
+    } finally {
+      setTogglingKeys((prev) => {
+        const next = new Set(prev)
+        next.delete(key)
+        return next
       })
     }
   }
@@ -369,50 +407,121 @@ export function GrowthTrackerPage() {
         </CardContent>
       </Card>
 
-      {/* Milestones */}
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-lg font-semibold">{t('growth.milestones')}</h2>
-          <p className="mb-4 text-sm text-muted-foreground">{t('growth.milestones.subtitle')}</p>
-          <div className="space-y-6">
-            {MILESTONE_GROUPS.map((group) => (
-              <div key={group.titleKey}>
-                <h3 className="mb-2 text-sm font-semibold text-teal-700">{t(group.titleKey)}</h3>
-                <div className="space-y-1">
-                  {group.milestones.map((ms) => {
-                    const achieved = achievedKeys.has(ms.key)
-                    return (
-                      <button
-                        key={ms.key}
-                        type="button"
-                        onClick={() => handleToggleMilestone(ms.key, achieved)}
-                        className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
-                          achieved
-                            ? 'border-teal-300 bg-teal-50 text-teal-800'
-                            : 'border-slate-200 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div
-                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                            achieved
-                              ? 'border-teal-500 bg-teal-500 text-white'
-                              : 'border-slate-300'
-                          }`}
-                        >
-                          {achieved && <Check className="h-3 w-3" />}
-                        </div>
-                        <span className={achieved ? 'line-through opacity-70' : ''}>
-                          {t(ms.labelKey)}
-                        </span>
-                      </button>
-                    )
-                  })}
+      {/* Milestone Board */}
+      <div>
+        <h2 className="text-lg font-semibold">{t('growth.milestones')}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t('growth.milestones.subtitle')}</p>
+
+        {/* Month tabs */}
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+          {MILESTONE_GROUPS.map((group, idx) => (
+            <button
+              key={group.titleKey}
+              type="button"
+              onClick={() => setMilestoneTab(idx)}
+              className={`whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                milestoneTab === idx
+                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {t(group.titleKey)}
+            </button>
+          ))}
+        </div>
+
+        {/* Milestone cards grid */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {MILESTONE_GROUPS[milestoneTab].milestones.map((ms) => {
+            const achieved = achievedKeys.has(ms.key)
+            const style = CATEGORY_STYLES[ms.category]
+            const IconComponent = ICON_MAP[ms.icon]
+            return (
+              <button
+                key={ms.key}
+                type="button"
+                onClick={() => {
+                  handleToggleMilestone(ms.key, achieved)
+                  if (!achieved) toast.success(t('milestone.completed'))
+                }}
+                className={`group relative cursor-pointer overflow-hidden rounded-xl border-2 p-5 text-left transition-all hover:-translate-y-1 ${
+                  achieved
+                    ? 'border-violet-400 bg-violet-500 text-white'
+                    : `border-transparent ${style.bg} hover:border-violet-300`
+                }`}
+              >
+                {/* Icon */}
+                <div
+                  className={`mb-3 flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${
+                    achieved ? 'bg-white/20 text-white' : `${style.iconBg} ${style.iconText}`
+                  }`}
+                >
+                  {IconComponent && <IconComponent className="h-5 w-5" />}
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+
+                {/* Title */}
+                <h3 className="mb-1 text-base font-bold">{t(ms.labelKey)}</h3>
+
+                {/* Description */}
+                <p className={`mb-4 text-sm ${achieved ? 'opacity-80' : 'opacity-70'}`}>
+                  {t(ms.descKey)}
+                </p>
+
+                {/* Footer: category tag + heart */}
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider ${
+                      achieved ? 'opacity-60' : 'opacity-50'
+                    }`}
+                  >
+                    {t(style.tagKey)}
+                  </span>
+                  <div
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors ${
+                      achieved
+                        ? 'border-white/50 bg-white text-violet-500'
+                        : 'border-slate-200'
+                    }`}
+                  >
+                    <Heart className={`h-3.5 w-3.5 ${achieved ? 'fill-current' : ''}`} />
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Progress bar */}
+        {(() => {
+          const group = MILESTONE_GROUPS[milestoneTab]
+          const total = group.milestones.length
+          const done = group.milestones.filter((ms) => achievedKeys.has(ms.key)).length
+          const pct = Math.round((done / total) * 100)
+          const remaining = total - done
+          return (
+            <Card className="mt-6">
+              <CardContent className="p-5">
+                <h3 className="mb-3 text-sm font-bold">{t('milestone.progress')}</h3>
+                <div className="mb-1 flex justify-between text-xs font-medium">
+                  <span>{t(group.titleKey)}</span>
+                  <span className="text-violet-500">{pct}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-violet-500 transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-center text-[11px] text-slate-400">
+                  {remaining > 0
+                    ? `${remaining} ${t('milestone.progress.left')}`
+                    : t('milestone.progress.done')}
+                </p>
+              </CardContent>
+            </Card>
+          )
+        })()}
+      </div>
 
       {/* History */}
       <Card>
@@ -433,7 +542,7 @@ export function GrowthTrackerPage() {
                       {r.weight_kg != null && (r.height_cm != null || r.head_cm != null) && ' · '}
                       {r.height_cm != null && `${r.height_cm} ${t('growth.cm')}`}
                       {r.height_cm != null && r.head_cm != null && ' · '}
-                      {r.head_cm != null && `${t('growth.head').split('(')[0].trim()} ${r.head_cm} ${t('growth.cm')}`}
+                      {r.head_cm != null && `${t('growth.head.short')} ${r.head_cm} ${t('growth.cm')}`}
                       {r.notes ? ` — ${r.notes}` : ''}
                     </p>
                   </div>
