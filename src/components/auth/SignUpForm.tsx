@@ -112,7 +112,7 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={8}
           autoComplete="new-password"
         />
       </div>
@@ -135,8 +135,8 @@ export function SignUpForm({ onSuccess, defaultRole = 'new_baby', defaultInviteC
             id="signup-invite-code"
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-            placeholder="ABCDE12345FGHIJ"
-            maxLength={15}
+            placeholder="ABC123"
+            maxLength={6}
             required
             className="font-mono text-lg tracking-wider uppercase"
           />

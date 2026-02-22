@@ -5,7 +5,7 @@ import type { BabyInvite } from '@/types'
 
 const INVITE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
-function generateInviteCode(length = 15): string {
+function generateInviteCode(length = 6): string {
   const values = new Uint8Array(length)
   crypto.getRandomValues(values)
   let code = ''

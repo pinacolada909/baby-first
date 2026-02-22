@@ -41,7 +41,7 @@ export const en = {
   'auth.updatePassword.submit': 'Update Password',
   'auth.updatePassword.success': 'Password updated successfully',
   'auth.updatePassword.mismatch': 'Passwords do not match',
-  'auth.updatePassword.tooShort': 'Password must be at least 6 characters',
+  'auth.updatePassword.tooShort': 'Password must be at least 8 characters',
   'auth.signUp.role.newBaby': 'New Baby',
   'auth.signUp.role.joinExisting': 'Join Existing Baby',
   'auth.signUp.babyName': 'Baby Name',

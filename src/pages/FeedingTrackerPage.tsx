@@ -115,13 +115,20 @@ export function FeedingTrackerPage() {
       return
     }
 
+    const vol = volume ? parseInt(volume, 10) : null
+    const dur = duration ? parseInt(duration, 10) : null
+    if ((vol !== null && (isNaN(vol) || vol < 0)) || (dur !== null && (isNaN(dur) || dur < 0))) {
+      toast.error(t('common.error'))
+      return
+    }
+
     const feeding = {
       baby_id: babyId ?? 'demo',
       caregiver_id: user?.id ?? 'demo',
       fed_at: new Date(time).toISOString(),
       feeding_type: feedingType,
-      volume_ml: volume ? parseInt(volume) : null,
-      duration_minutes: duration ? parseInt(duration) : null,
+      volume_ml: vol,
+      duration_minutes: dur,
       notes: notes || null,
     }
 

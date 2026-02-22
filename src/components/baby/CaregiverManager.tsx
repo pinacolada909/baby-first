@@ -183,7 +183,7 @@ export function CaregiverManager() {
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                     placeholder={t('caregiver.join.code')}
-                    maxLength={15}
+                    maxLength={6}
                     className="font-mono tracking-wider uppercase"
                   />
                 </div>

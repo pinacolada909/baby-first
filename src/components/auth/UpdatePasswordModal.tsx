@@ -28,7 +28,7 @@ export function UpdatePasswordModal() {
       toast.error(t('auth.updatePassword.mismatch'))
       return
     }
-    if (password.length < 6) {
+    if (password.length < 8) {
       toast.error(t('auth.updatePassword.tooShort'))
       return
     }
@@ -65,7 +65,7 @@ export function UpdatePasswordModal() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
             />
           </div>
@@ -77,7 +77,7 @@ export function UpdatePasswordModal() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
             />
           </div>

@@ -43,7 +43,7 @@ export const zh: Record<TranslationKey, string> = {
   'auth.updatePassword.submit': '更新密码',
   'auth.updatePassword.success': '密码更新成功',
   'auth.updatePassword.mismatch': '两次密码不一致',
-  'auth.updatePassword.tooShort': '密码至少需要6个字符',
+  'auth.updatePassword.tooShort': '密码至少需要8个字符',
   'auth.signUp.role.newBaby': '新宝宝',
   'auth.signUp.role.joinExisting': '加入已有宝宝',
   'auth.signUp.babyName': '宝宝名字',

@@ -37,7 +37,7 @@ function getPendingSignupAction(): PendingAction | null {
     }
     if (obj.type === 'redeem_invite') {
       if (typeof obj.code !== 'string' || typeof obj.displayName !== 'string') return null
-      if (obj.code.length > 20 || obj.displayName.length > 50) return null
+      if (obj.code.length > 6 || obj.displayName.length > 50) return null
       return { type: 'redeem_invite', code: obj.code, displayName: obj.displayName }
     }
     return null

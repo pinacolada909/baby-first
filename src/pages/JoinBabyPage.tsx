@@ -100,8 +100,8 @@ export function JoinBabyPage() {
                 id="join-code"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder="ABCDE12345FGHIJ"
-                maxLength={15}
+                placeholder="ABC123"
+                maxLength={6}
                 className="font-mono text-lg tracking-wider uppercase"
               />
             </div>

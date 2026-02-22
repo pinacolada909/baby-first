@@ -2,9 +2,17 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'https://esm.sh/resend@2'
 // btoa is available globally in Deno
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_ORIGINS = [
+  'https://baby-first-iota.vercel.app',
+  'http://localhost:5173',
+]
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') || ''
+  return {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
 }
 
 interface SleepSession {
@@ -40,10 +48,23 @@ function formatDate(isoString: string): string {
   })
 }
 
+function escapeCSV(value: string | number | null): string {
+  if (value === null || value === undefined) return ''
+  const str = String(value)
+  // Prevent formula injection
+  if (/^[=+\-@\t\r]/.test(str)) {
+    return `"'${str.replace(/"/g, '""')}"`
+  }
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
 function generateSleepCSV(sessions: SleepSession[]): string {
   const header = 'Start Time,End Time,Duration (hours),Notes'
   const rows = sessions.map(s =>
-    `${formatDate(s.start_time)},${formatDate(s.end_time)},${s.duration_hours.toFixed(1)},${s.notes || ''}`
+    `${escapeCSV(formatDate(s.start_time))},${escapeCSV(formatDate(s.end_time))},${s.duration_hours.toFixed(1)},${escapeCSV(s.notes)}`
   )
   return [header, ...rows].join('\n')
 }
@@ -51,7 +72,7 @@ function generateSleepCSV(sessions: SleepSession[]): string {
 function generateDiaperCSV(changes: DiaperChange[]): string {
   const header = 'Time,Type,Notes'
   const rows = changes.map(d =>
-    `${formatDate(d.changed_at)},${d.status},${d.notes || ''}`
+    `${escapeCSV(formatDate(d.changed_at))},${escapeCSV(d.status)},${escapeCSV(d.notes)}`
   )
   return [header, ...rows].join('\n')
 }
@@ -59,15 +80,27 @@ function generateDiaperCSV(changes: DiaperChange[]): string {
 function generateFeedingCSV(feedings: Feeding[]): string {
   const header = 'Time,Type,Volume (mL),Duration (min),Notes'
   const rows = feedings.map(f =>
-    `${formatDate(f.fed_at)},${f.feeding_type},${f.volume_ml || ''},${f.duration_minutes || ''},${f.notes || ''}`
+    `${escapeCSV(formatDate(f.fed_at))},${escapeCSV(f.feeding_type)},${escapeCSV(f.volume_ml)},${escapeCSV(f.duration_minutes)},${escapeCSV(f.notes)}`
   )
   return [header, ...rows].join('\n')
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  // Require cron secret for authentication
+  const cronSecret = Deno.env.get('CRON_SECRET')
+  const authHeader = req.headers.get('Authorization')
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 
   try {
@@ -234,7 +267,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: String(error) }), {
+    console.error('daily-summary error:', error)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
