@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useBaby } from '@/contexts/BabyContext'
 import { useLayoutContext } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { BabyStatusCard } from '@/components/home/BabyStatusCard'
+import { CurrentShiftCard } from '@/components/home/CurrentShiftCard'
 import {
   HelpCircle,
   Moon,
@@ -82,8 +85,10 @@ const FEATURES = [
 export function HomePage() {
   const { t } = useLanguage()
   const { isDemo } = useAuth()
+  const { selectedBaby } = useBaby()
   const { onOpenAuth } = useLayoutContext()
   const navigate = useNavigate()
+  const showDashboardCards = !isDemo && !!selectedBaby
 
   return (
     <div className="space-y-14">
@@ -108,6 +113,14 @@ export function HomePage() {
           </Button>
         </div>
       </section>
+
+      {/* Dashboard Status Cards (logged-in users with baby selected) */}
+      {showDashboardCards && (
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <BabyStatusCard />
+          <CurrentShiftCard />
+        </section>
+      )}
 
       {/* Stats Row */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">

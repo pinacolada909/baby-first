@@ -14,6 +14,7 @@ import { WorkloadSummaryCards } from '@/components/dashboard/WorkloadSummaryCard
 import { WorkloadBalanceBar } from '@/components/dashboard/WorkloadBalanceBar'
 import { ActivityBreakdownChart } from '@/components/dashboard/ActivityBreakdownChart'
 import { HouseholdTaskLogger } from '@/components/dashboard/HouseholdTaskLogger'
+import { ShiftScheduler } from '@/components/dashboard/ShiftScheduler'
 
 // Demo data generators
 function makeDemoActivities(): CaregiverActivity[] {
@@ -176,6 +177,9 @@ export function ActivityDashboardPage() {
         <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
         <p className="mt-2 text-muted-foreground">{t('dashboard.subtitle')}</p>
       </div>
+
+      {/* Shift Scheduler */}
+      <ShiftScheduler babyId={babyId} isDemo={isDemo} />
 
       {/* Date Range Filter */}
       <DateRangeFilter value={dateRange} onChange={setDateRange} />

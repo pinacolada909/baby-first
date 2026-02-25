@@ -374,6 +374,40 @@ export const en = {
   'milestone.5.3.desc': 'Becomes wary or fussy around unfamiliar people.',
   'milestone.5.4.desc': 'Deliberately passes objects between left and right hand.',
 
+  // Home Status Cards
+  'home.status.lastFeed': 'Last feed',
+  'home.status.awake': 'Awake',
+  'home.status.sleeping': 'Sleeping',
+  'home.status.diaper': 'Diaper',
+  'home.status.content': 'Content',
+  'home.status.needFeeding': 'May need feeding',
+  'home.status.needChanging': 'May need changing',
+  'home.status.noData': 'No data yet',
+  'home.status.normal': 'normal',
+  'home.status.ago': 'ago',
+
+  // Home Shift Card
+  'home.shift.title': 'Current Shift',
+  'home.shift.onDuty': 'On Duty',
+  'home.shift.sleeping': 'sleeping',
+  'home.shift.standby': 'standby',
+  'home.shift.noShift': 'No shift scheduled',
+  'home.shift.setup': 'Set up shifts on the Dashboard',
+
+  // Shift Scheduler
+  'shift.title': 'Shift Schedule',
+  'shift.add': 'Add Shift',
+  'shift.caregiver': 'Caregiver',
+  'shift.start': 'Start',
+  'shift.end': 'End',
+  'shift.type': 'Type',
+  'shift.care': 'On Duty',
+  'shift.rest': 'Rest',
+  'shift.today': 'Today\'s Shifts',
+  'shift.empty': 'No shifts scheduled for today',
+  'shift.added': 'Shift added',
+  'shift.deleted': 'Shift deleted',
+
   // Common
   'common.save': 'Save',
   'common.cancel': 'Cancel',

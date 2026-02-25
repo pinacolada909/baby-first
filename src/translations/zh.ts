@@ -376,6 +376,40 @@ export const zh: Record<TranslationKey, string> = {
   'milestone.5.3.desc': '遇到不熟悉的人会警觉或烦躁。',
   'milestone.5.4.desc': '能有意识地在左右手之间传递物体。',
 
+  // Home Status Cards
+  'home.status.lastFeed': '上次喂养',
+  'home.status.awake': '清醒',
+  'home.status.sleeping': '睡眠中',
+  'home.status.diaper': '尿布',
+  'home.status.content': '满足',
+  'home.status.needFeeding': '可能需要喂养',
+  'home.status.needChanging': '可能需要换尿布',
+  'home.status.noData': '暂无数据',
+  'home.status.normal': '正常',
+  'home.status.ago': '前',
+
+  // Home Shift Card
+  'home.shift.title': '当前值班',
+  'home.shift.onDuty': '值班中',
+  'home.shift.sleeping': '休息中',
+  'home.shift.standby': '待命',
+  'home.shift.noShift': '未安排值班',
+  'home.shift.setup': '在分工看板中安排值班',
+
+  // Shift Scheduler
+  'shift.title': '值班安排',
+  'shift.add': '添加值班',
+  'shift.caregiver': '照护者',
+  'shift.start': '开始',
+  'shift.end': '结束',
+  'shift.type': '类型',
+  'shift.care': '值班',
+  'shift.rest': '休息',
+  'shift.today': '今日值班',
+  'shift.empty': '今天未安排值班',
+  'shift.added': '值班已添加',
+  'shift.deleted': '值班已删除',
+
   // Common
   'common.save': '保存',
   'common.cancel': '取消',
