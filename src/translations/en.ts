@@ -407,6 +407,7 @@ export const en = {
   'shift.empty': 'No shifts scheduled for today',
   'shift.added': 'Shift added',
   'shift.deleted': 'Shift deleted',
+  'shift.overlap': 'This caregiver already has a shift during this time',
 
   // Common
   'common.save': 'Save',

@@ -79,6 +79,19 @@ export function ShiftScheduler({ babyId, isDemo }: ShiftSchedulerProps) {
       end.setDate(end.getDate() + 1)
     }
 
+    // Overlap validation: prevent same caregiver from having overlapping blocks
+    const existingBlocks = isDemo ? demoBlocks : timeBlocks
+    const hasOverlap = existingBlocks.some((b) => {
+      if (b.caregiver_id !== cgId) return false
+      const bStart = new Date(b.start_time).getTime()
+      const bEnd = new Date(b.end_time).getTime()
+      return bStart < end.getTime() && start.getTime() < bEnd
+    })
+    if (hasOverlap) {
+      toast.error(t('shift.overlap'))
+      return
+    }
+
     if (isDemo) {
       setDemoBlocks((prev) => [
         ...prev,

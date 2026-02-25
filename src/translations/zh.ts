@@ -409,6 +409,7 @@ export const zh: Record<TranslationKey, string> = {
   'shift.empty': '今天未安排值班',
   'shift.added': '值班已添加',
   'shift.deleted': '值班已删除',
+  'shift.overlap': '该照护者在此时间段已有值班安排',
 
   // Common
   'common.save': '保存',
