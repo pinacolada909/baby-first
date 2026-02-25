@@ -409,6 +409,22 @@ export const en = {
   'shift.deleted': 'Shift deleted',
   'shift.overlap': 'This caregiver already has a shift during this time',
 
+  // Home Tracker Summary Cards
+  'home.summary.sleep': 'Sleep',
+  'home.summary.feeding': 'Feeding',
+  'home.summary.diaper': 'Diaper',
+  'home.summary.growth': 'Growth',
+  'home.summary.sessions': 'sessions',
+  'home.summary.feedings': 'feedings',
+  'home.summary.changes': 'changes',
+  'home.summary.noData': 'No data today',
+  'home.summary.noRecords': 'No records yet',
+  'home.summary.today': 'Today',
+  'home.summary.hrs': 'hrs',
+  'home.summary.wet': 'wet',
+  'home.summary.dirty': 'dirty',
+  'home.summary.mixed': 'mixed',
+
   // Common
   'common.save': 'Save',
   'common.cancel': 'Cancel',

@@ -411,6 +411,22 @@ export const zh: Record<TranslationKey, string> = {
   'shift.deleted': '值班已删除',
   'shift.overlap': '该照护者在此时间段已有值班安排',
 
+  // Home Tracker Summary Cards
+  'home.summary.sleep': '睡眠',
+  'home.summary.feeding': '喂养',
+  'home.summary.diaper': '尿布',
+  'home.summary.growth': '生长',
+  'home.summary.sessions': '次',
+  'home.summary.feedings': '次',
+  'home.summary.changes': '次',
+  'home.summary.noData': '今日暂无数据',
+  'home.summary.noRecords': '暂无记录',
+  'home.summary.today': '今日',
+  'home.summary.hrs': '小时',
+  'home.summary.wet': '湿',
+  'home.summary.dirty': '脏',
+  'home.summary.mixed': '混合',
+
   // Common
   'common.save': '保存',
   'common.cancel': '取消',

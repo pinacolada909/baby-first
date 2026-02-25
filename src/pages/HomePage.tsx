@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BabyStatusCard } from '@/components/home/BabyStatusCard'
 import { CurrentShiftCard } from '@/components/home/CurrentShiftCard'
+import { TrackerSummaryCards } from '@/components/home/TrackerSummaryCards'
 import {
   HelpCircle,
   Moon,
@@ -90,11 +91,24 @@ export function HomePage() {
   const navigate = useNavigate()
   const showDashboardCards = !isDemo && !!selectedBaby
 
+  // Logged-in users with a baby selected see the dashboard view
+  if (showDashboardCards) {
+    return (
+      <div className="space-y-6">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <BabyStatusCard />
+          <CurrentShiftCard />
+        </section>
+        <TrackerSummaryCards babyId={selectedBaby!.id} />
+      </div>
+    )
+  }
+
+  // Demo / unauthenticated users see the marketing layout
   return (
     <div className="space-y-14">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#a78bfa] via-indigo-400 to-[#a78bfa] px-6 py-16 text-center text-white shadow-lg">
-        {/* Decorative blur circles */}
         <div className="absolute top-0 left-0 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute right-0 bottom-0 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <div className="relative">
@@ -107,20 +121,12 @@ export function HomePage() {
           <Button
             size="lg"
             className="mt-8 rounded-full bg-white px-8 font-semibold text-[#a78bfa] shadow-lg hover:bg-white/90"
-            onClick={() => isDemo ? onOpenAuth() : navigate('/sleep-tracker')}
+            onClick={onOpenAuth}
           >
             {t('home.hero.cta')}
           </Button>
         </div>
       </section>
-
-      {/* Dashboard Status Cards (logged-in users with baby selected) */}
-      {showDashboardCards && (
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <BabyStatusCard />
-          <CurrentShiftCard />
-        </section>
-      )}
 
       {/* Stats Row */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -200,20 +206,16 @@ export function HomePage() {
         </div>
         <div className="rounded-2xl bg-[#e0f2fe]/20 py-10">
           <div className="mx-auto max-w-sm -rotate-1">
-            {/* Diary tab */}
             <div className="mx-auto w-fit rounded-t-lg bg-amber-200 px-4 py-1 text-xs font-medium text-amber-800">
               {t('home.email.diary.tab')}
             </div>
             <Card className="overflow-hidden rounded-t-none border-t-8 border-t-[#a78bfa] shadow-lg">
               <CardContent className="space-y-3 p-5">
-                {/* Subject */}
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-semibold">{t('home.email.sample.subject')}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">{t('home.email.sample.date')}</p>
-
-                {/* Stats */}
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center gap-3 rounded-lg bg-amber-50 px-3 py-2">
                     <Moon className="h-4 w-4 text-amber-500" />
@@ -237,8 +239,6 @@ export function HomePage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Footer */}
                 <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Paperclip className="h-3 w-3" />
@@ -253,21 +253,19 @@ export function HomePage() {
       </section>
 
       {/* CTA Section */}
-      {isDemo && (
-        <section className="rounded-3xl bg-[#f3e8ff] p-8 text-center">
-          <h2 className="text-2xl font-bold">{t('home.cta.title')}</h2>
-          <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-            {t('home.cta.subtitle')}
-          </p>
-          <Button
-            className="mt-6 rounded-full bg-[#a78bfa] px-8 text-white shadow-lg shadow-[#a78bfa]/20 hover:opacity-90"
-            size="lg"
-            onClick={onOpenAuth}
-          >
-            {t('home.cta.button')}
-          </Button>
-        </section>
-      )}
+      <section className="rounded-3xl bg-[#f3e8ff] p-8 text-center">
+        <h2 className="text-2xl font-bold">{t('home.cta.title')}</h2>
+        <p className="mx-auto mt-2 max-w-md text-muted-foreground">
+          {t('home.cta.subtitle')}
+        </p>
+        <Button
+          className="mt-6 rounded-full bg-[#a78bfa] px-8 text-white shadow-lg shadow-[#a78bfa]/20 hover:opacity-90"
+          size="lg"
+          onClick={onOpenAuth}
+        >
+          {t('home.cta.button')}
+        </Button>
+      </section>
     </div>
   )
 }
