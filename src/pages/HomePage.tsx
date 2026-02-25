@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { BabyStatusCard } from '@/components/home/BabyStatusCard'
 import { CurrentShiftCard } from '@/components/home/CurrentShiftCard'
 import { TrackerSummaryCards } from '@/components/home/TrackerSummaryCards'
+import { RecentTimeline } from '@/components/home/RecentTimeline'
 import {
   HelpCircle,
   Moon,
@@ -95,11 +96,10 @@ export function HomePage() {
   if (showDashboardCards) {
     return (
       <div className="space-y-6">
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <BabyStatusCard />
-          <CurrentShiftCard />
-        </section>
+        <BabyStatusCard />
+        <CurrentShiftCard />
         <TrackerSummaryCards babyId={selectedBaby!.id} />
+        <RecentTimeline babyId={selectedBaby!.id} />
       </div>
     )
   }

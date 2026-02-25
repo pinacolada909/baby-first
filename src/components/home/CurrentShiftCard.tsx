@@ -7,8 +7,8 @@ import { useTimeBlocks } from '@/hooks/useTimeBlocks'
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { UserCheck } from 'lucide-react'
 import type { TimeBlock, BabyCaregiver } from '@/types'
 
 function formatTime(dateStr: string): string {
@@ -33,7 +33,6 @@ function computeShiftInfo(
     (b) => isToday(b.start_time) || isToday(b.end_time),
   )
 
-  // Find who is currently on duty
   const currentCareBlock = todayBlocks.find(
     (b) =>
       b.block_type === 'care' &&
@@ -52,7 +51,6 @@ function computeShiftInfo(
       }
     : null
 
-  // Check other caregivers' status
   const onDutyId = currentCareBlock?.caregiver_id
   const others = caregivers
     .filter((c) => c.user_id !== onDutyId)
@@ -90,60 +88,49 @@ export function CurrentShiftCard() {
     [timeBlocks, caregivers],
   )
 
-  const hasAnyShifts = timeBlocks.some((b) => isToday(b.start_time) || isToday(b.end_time))
+  if (!shiftInfo.onDuty) {
+    return (
+      <section className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-300 shadow-lg shadow-slate-300/20">
+          <UserCheck className="h-5 w-5 text-white" />
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            {t('home.shift.currentCaregiver')}
+          </p>
+          <p className="text-sm text-muted-foreground">{t('home.shift.noShift')}</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/time-management')}
+          className="text-xs"
+        >
+          {t('home.shift.setup')}
+        </Button>
+      </section>
+    )
+  }
 
   return (
-    <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-      <CardContent className="p-5">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-blue-600">
-          🛎 {t('home.shift.title')}
+    <section className="flex items-center gap-4 rounded-2xl border border-sky-100 bg-sky-50 p-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500 shadow-lg shadow-sky-500/20">
+        <UserCheck className="h-5 w-5 text-white" />
+      </div>
+      <div className="flex-1">
+        <div className="mb-0.5 flex items-center justify-between">
+          <p className="text-xs font-bold uppercase tracking-wide text-sky-600">
+            {t('home.shift.currentCaregiver')}
+          </p>
+          <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-bold text-white">
+            {t('home.shift.onDuty').toUpperCase()}
+          </span>
+        </div>
+        <h3 className="text-sm font-bold text-slate-800">{shiftInfo.onDuty.name}</h3>
+        <p className="text-[10px] text-slate-500">
+          {t('home.shift.shiftEnds')}: {shiftInfo.onDuty.end}
         </p>
-
-        {shiftInfo.onDuty ? (
-          <>
-            <div className="mb-3">
-              <p className="text-lg font-bold">
-                {shiftInfo.onDuty.name}{' '}
-                <span className="text-blue-600">🟦 {t('home.shift.onDuty')}</span>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {shiftInfo.onDuty.start} — {shiftInfo.onDuty.end}
-              </p>
-            </div>
-
-            {shiftInfo.others.length > 0 && (
-              <div className="space-y-1 text-sm">
-                {shiftInfo.others.map((other) => (
-                  <p key={other.name} className="text-muted-foreground">
-                    {other.name}{' '}
-                    {other.status === 'sleeping' ? (
-                      <span>😴 {t('home.shift.sleeping')}</span>
-                    ) : (
-                      <span>{t('home.shift.standby')}</span>
-                    )}
-                  </p>
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <div>
-            <p className="mb-2 text-sm text-muted-foreground">
-              {hasAnyShifts
-                ? t('home.shift.noShift')
-                : t('home.shift.noShift')}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/time-management')}
-              className="text-xs"
-            >
-              {t('home.shift.setup')}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }

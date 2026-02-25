@@ -385,6 +385,13 @@ export const en = {
   'home.status.noData': 'No data yet',
   'home.status.normal': 'normal',
   'home.status.ago': 'ago',
+  'home.status.currentlyContent': 'Currently Content',
+  'home.status.currentlySleeping': 'Currently Sleeping',
+  'home.status.mayNeedAttention': 'May Need Attention',
+  'home.status.dailyGoal': 'Daily Goal',
+  'home.status.lastFeedShort': 'Last feed',
+  'home.status.awakeFor': 'Awake for',
+  'home.status.diaperShort': 'Diaper',
 
   // Home Shift Card
   'home.shift.title': 'Current Shift',
@@ -392,7 +399,9 @@ export const en = {
   'home.shift.sleeping': 'sleeping',
   'home.shift.standby': 'standby',
   'home.shift.noShift': 'No shift scheduled',
-  'home.shift.setup': 'Set up shifts on the Dashboard',
+  'home.shift.setup': 'Set up shifts',
+  'home.shift.currentCaregiver': 'Current Caregiver',
+  'home.shift.shiftEnds': 'Shift ends',
 
   // Shift Scheduler
   'shift.title': 'Shift Schedule',
@@ -424,6 +433,24 @@ export const en = {
   'home.summary.wet': 'wet',
   'home.summary.dirty': 'dirty',
   'home.summary.mixed': 'mixed',
+  'home.summary.naps': 'Naps',
+  'home.summary.totalToday': 'Total Today',
+  'home.summary.last': 'Last',
+  'home.summary.weight': 'Weight',
+  'home.summary.thisWeek': 'this week',
+  'home.summary.lastRecord': 'Last record',
+  'home.summary.daysAgo': 'd ago',
+
+  // Home Timeline
+  'home.timeline.title': 'Recent Timeline',
+  'home.timeline.seeAll': 'See all',
+  'home.timeline.wokeUp': 'Woke Up',
+  'home.timeline.fellAsleep': 'Fell Asleep',
+  'home.timeline.feeding': 'Feeding',
+  'home.timeline.bottleFeeding': 'Bottle Feeding',
+  'home.timeline.breastFeeding': 'Breast Feeding',
+  'home.timeline.diaperChange': 'Diaper Change',
+  'home.timeline.sleptFor': 'Slept for',
 
   // Common
   'common.save': 'Save',

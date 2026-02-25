@@ -5,8 +5,7 @@ import { useSleepSessions } from '@/hooks/useSleepSessions'
 import { useFeedings } from '@/hooks/useFeedings'
 import { useDiaperChanges } from '@/hooks/useDiaperChanges'
 import { useGrowthRecords } from '@/hooks/useGrowthRecords'
-import { Card, CardContent } from '@/components/ui/card'
-import { Moon, Utensils, Baby, Ruler } from 'lucide-react'
+import { Moon, Utensils, Sparkles, Ruler, TrendingUp } from 'lucide-react'
 
 function isToday(dateStr: string): boolean {
   const d = new Date(dateStr)
@@ -16,6 +15,18 @@ function isToday(dateStr: string): boolean {
     d.getMonth() === now.getMonth() &&
     d.getDate() === now.getDate()
   )
+}
+
+function formatTimeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime()
+  if (diffMs < 0) return ''
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return '<1m'
+  if (diffMin < 60) return `${diffMin}m`
+  const hours = Math.floor(diffMin / 60)
+  const mins = diffMin % 60
+  if (hours < 24) return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`
+  return `${Math.floor(hours / 24)}d`
 }
 
 interface TrackerSummaryCardsProps {
@@ -31,113 +42,210 @@ export function TrackerSummaryCards({ babyId }: TrackerSummaryCardsProps) {
   const { data: diaperChanges = [] } = useDiaperChanges(babyId)
   const { data: growthRecords = [] } = useGrowthRecords(babyId)
 
-  // Sleep: today's sessions
+  // Sleep stats
   const sleepStats = useMemo(() => {
     const todaySessions = sleepSessions.filter((s) => isToday(s.start_time))
-    const totalHours = todaySessions.reduce((sum, s) => sum + (s.duration_hours ?? 0), 0)
-    return { count: todaySessions.length, totalHours: Math.round(totalHours * 10) / 10 }
+    const totalMinutes = todaySessions.reduce((sum, s) => sum + (s.duration_hours ?? 0) * 60, 0)
+    const hours = Math.floor(totalMinutes / 60)
+    const mins = Math.round(totalMinutes % 60)
+    // Bar heights for visualization (normalized to max 32px)
+    const durations = todaySessions.map((s) => s.duration_hours ?? 0)
+    const maxDur = Math.max(...durations, 1)
+    const bars = durations.slice(0, 4).map((d) => Math.max(8, Math.round((d / maxDur) * 32)))
+    return { count: todaySessions.length, hours, mins, bars }
   }, [sleepSessions])
 
-  // Feeding: today's feedings
+  // Feeding stats
   const feedingStats = useMemo(() => {
     const todayFeedings = feedings.filter((f) => isToday(f.fed_at))
     const totalMl = todayFeedings.reduce((sum, f) => sum + (f.volume_ml ?? 0), 0)
-    return { count: todayFeedings.length, totalMl }
+    const pct = Math.min(Math.round((totalMl / 800) * 100), 100)
+    const lastFeed = todayFeedings[0] ?? null
+    return { count: todayFeedings.length, totalMl, pct, lastFeed }
   }, [feedings])
 
-  // Diaper: today's changes
+  // Diaper stats
   const diaperStats = useMemo(() => {
     const todayChanges = diaperChanges.filter((d) => isToday(d.changed_at))
     const wet = todayChanges.filter((d) => d.status === 'wet').length
-    const dirty = todayChanges.filter((d) => d.status === 'dirty').length
-    const mixed = todayChanges.filter((d) => d.status === 'mixed').length
-    return { count: todayChanges.length, wet, dirty, mixed }
+    const lastChange = todayChanges[0] ?? null
+    return { count: todayChanges.length, wet, lastChange }
   }, [diaperChanges])
 
-  // Growth: latest record (not filtered to today)
-  const latestGrowth = growthRecords[0] ?? null
+  // Growth stats
+  const growthStats = useMemo(() => {
+    const latest = growthRecords[0] ?? null
+    const previous = growthRecords[1] ?? null
+    let delta: number | null = null
+    if (latest?.weight_kg != null && previous?.weight_kg != null) {
+      delta = Math.round((latest.weight_kg - previous.weight_kg) * 1000) // grams
+    }
+    let daysAgo: number | null = null
+    if (latest) {
+      daysAgo = Math.floor((Date.now() - new Date(latest.measured_at).getTime()) / (1000 * 60 * 60 * 24))
+    }
+    return { latest, delta, daysAgo }
+  }, [growthRecords])
 
-  const cards = [
-    {
-      icon: Moon,
-      title: t('home.summary.sleep'),
-      route: '/sleep-tracker',
-      iconColor: 'text-blue-500',
-      iconBg: 'bg-blue-100',
-      borderColor: 'border-blue-200',
-      hoverBg: 'hover:bg-blue-50/50',
-      content: sleepStats.count > 0
-        ? `${sleepStats.totalHours} ${t('home.summary.hrs')} · ${sleepStats.count} ${t('home.summary.sessions')}`
-        : t('home.summary.noData'),
-    },
-    {
-      icon: Utensils,
-      title: t('home.summary.feeding'),
-      route: '/feeding-tracker',
-      iconColor: 'text-rose-500',
-      iconBg: 'bg-rose-100',
-      borderColor: 'border-rose-200',
-      hoverBg: 'hover:bg-rose-50/50',
-      content: feedingStats.count > 0
-        ? `${feedingStats.count} ${t('home.summary.feedings')}${feedingStats.totalMl > 0 ? ` · ${feedingStats.totalMl} ml` : ''}`
-        : t('home.summary.noData'),
-    },
-    {
-      icon: Baby,
-      title: t('home.summary.diaper'),
-      route: '/diaper-tracker',
-      iconColor: 'text-green-500',
-      iconBg: 'bg-green-100',
-      borderColor: 'border-green-200',
-      hoverBg: 'hover:bg-green-50/50',
-      content: diaperStats.count > 0
-        ? `${diaperStats.count} ${t('home.summary.changes')}` +
-          (diaperStats.wet > 0 ? ` · ${diaperStats.wet} ${t('home.summary.wet')}` : '') +
-          (diaperStats.dirty > 0 ? ` · ${diaperStats.dirty} ${t('home.summary.dirty')}` : '') +
-          (diaperStats.mixed > 0 ? ` · ${diaperStats.mixed} ${t('home.summary.mixed')}` : '')
-        : t('home.summary.noData'),
-    },
-    {
-      icon: Ruler,
-      title: t('home.summary.growth'),
-      route: '/growth',
-      iconColor: 'text-teal-500',
-      iconBg: 'bg-teal-100',
-      borderColor: 'border-teal-200',
-      hoverBg: 'hover:bg-teal-50/50',
-      content: latestGrowth
-        ? [
-            latestGrowth.weight_kg != null ? `${latestGrowth.weight_kg} kg` : null,
-            latestGrowth.height_cm != null ? `${latestGrowth.height_cm} cm` : null,
-            latestGrowth.head_cm != null ? `${t('growth.head')}: ${latestGrowth.head_cm} cm` : null,
-          ].filter(Boolean).join(' · ') || t('home.summary.noRecords')
-        : t('home.summary.noRecords'),
-    },
-  ]
+  const barColors = ['bg-indigo-200', 'bg-indigo-500', 'bg-indigo-300', 'bg-indigo-400']
 
   return (
-    <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {cards.map((card) => {
-        const Icon = card.icon
-        return (
-          <Card
-            key={card.route}
-            className={`cursor-pointer border-2 ${card.borderColor} bg-white transition-all ${card.hoverBg} hover:shadow-md`}
-            onClick={() => navigate(card.route)}
-          >
-            <CardContent className="p-5">
-              <div className="mb-2 flex items-center gap-2">
-                <div className={`inline-flex rounded-xl p-2 ${card.iconBg}`}>
-                  <Icon className={`h-5 w-5 ${card.iconColor}`} />
-                </div>
-                <h3 className="font-semibold">{card.title}</h3>
-                <span className="ml-auto text-xs text-muted-foreground">{t('home.summary.today')}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">{card.content}</p>
-            </CardContent>
-          </Card>
-        )
-      })}
-    </section>
+    <div className="grid grid-cols-2 gap-4">
+      {/* Sleep Card */}
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        onClick={() => navigate('/sleep-tracker')}
+      >
+        <div className="absolute right-0 top-0 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <Moon className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="mt-8 space-y-1">
+          <h4 className="text-sm font-bold text-slate-500">{t('home.summary.sleep')}</h4>
+          {sleepStats.count > 0 ? (
+            <p className="text-2xl font-black">
+              {sleepStats.hours}h{' '}
+              <span className="text-sm font-bold text-slate-400">{sleepStats.mins}m</span>
+            </p>
+          ) : (
+            <p className="text-lg font-bold text-slate-300">{t('home.summary.noData')}</p>
+          )}
+        </div>
+        {sleepStats.bars.length > 0 ? (
+          <div className="mt-4 flex items-end gap-1" style={{ height: 32 }}>
+            {sleepStats.bars.map((h, i) => (
+              <div
+                key={i}
+                className={`w-full rounded-full ${barColors[i % barColors.length]}`}
+                style={{ height: h }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 flex items-end gap-1" style={{ height: 32 }}>
+            {[12, 20, 16, 8].map((h, i) => (
+              <div key={i} className="w-full rounded-full bg-slate-100" style={{ height: h }} />
+            ))}
+          </div>
+        )}
+        <p className="mt-2 text-[10px] font-medium text-slate-400">
+          {sleepStats.count} {t('home.summary.naps')} • {t('home.summary.totalToday')}
+        </p>
+      </div>
+
+      {/* Feeding Card */}
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        onClick={() => navigate('/feeding-tracker')}
+      >
+        <div className="absolute right-0 top-0 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <Utensils className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="mt-8 space-y-1">
+          <h4 className="text-sm font-bold text-slate-500">{t('home.summary.feeding')}</h4>
+          {feedingStats.count > 0 ? (
+            <p className="text-2xl font-black">
+              {feedingStats.totalMl > 0
+                ? <>{feedingStats.totalMl} <span className="text-sm font-bold text-slate-400">ml</span></>
+                : <>{feedingStats.count} <span className="text-sm font-bold text-slate-400">{t('home.summary.feedings')}</span></>
+              }
+            </p>
+          ) : (
+            <p className="text-lg font-bold text-slate-300">{t('home.summary.noData')}</p>
+          )}
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full bg-rose-400 transition-all"
+              style={{ width: `${feedingStats.pct}%` }}
+            />
+          </div>
+          <span className="text-[10px] font-bold text-rose-500">{feedingStats.pct}%</span>
+        </div>
+        <p className="mt-2 text-[10px] font-medium text-slate-400">
+          {feedingStats.lastFeed
+            ? `${t('home.summary.last')}: ${formatTimeAgo(feedingStats.lastFeed.fed_at)} ${t('home.status.ago')}`
+            : t('home.summary.noData')}
+        </p>
+      </div>
+
+      {/* Diaper Card */}
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        onClick={() => navigate('/diaper-tracker')}
+      >
+        <div className="absolute right-0 top-0 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <Sparkles className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="mt-8 space-y-1">
+          <h4 className="text-sm font-bold text-slate-500">{t('home.summary.diaper')}</h4>
+          {diaperStats.count > 0 ? (
+            <p className="text-2xl font-black">
+              {diaperStats.count}{' '}
+              <span className="text-sm font-bold text-slate-400">{t('home.summary.changes')}</span>
+            </p>
+          ) : (
+            <p className="text-lg font-bold text-slate-300">{t('home.summary.noData')}</p>
+          )}
+        </div>
+        <div className="mt-4 grid grid-cols-6 gap-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 rounded-full ${i < diaperStats.count ? 'bg-emerald-400' : 'bg-emerald-100'}`}
+            />
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] font-medium text-slate-400">
+          {diaperStats.lastChange
+            ? `${t('home.summary.last')}: ${formatTimeAgo(diaperStats.lastChange.changed_at)} ${t('home.status.ago')}`
+            : t('home.summary.noData')}
+        </p>
+      </div>
+
+      {/* Growth Card */}
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        onClick={() => navigate('/growth')}
+      >
+        <div className="absolute right-0 top-0 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <Ruler className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="mt-8 space-y-1">
+          <h4 className="text-sm font-bold text-slate-500">{t('home.summary.weight')}</h4>
+          {growthStats.latest?.weight_kg != null ? (
+            <p className="text-2xl font-black">
+              {growthStats.latest.weight_kg}{' '}
+              <span className="text-sm font-bold text-slate-400">kg</span>
+            </p>
+          ) : (
+            <p className="text-lg font-bold text-slate-300">{t('home.summary.noRecords')}</p>
+          )}
+        </div>
+        {growthStats.delta !== null ? (
+          <div className="mt-4 flex items-center text-emerald-500">
+            <TrendingUp className="h-4 w-4" />
+            <span className="ml-1 text-[10px] font-bold">
+              {growthStats.delta > 0 ? '+' : ''}{growthStats.delta}g {t('home.summary.thisWeek')}
+            </span>
+          </div>
+        ) : (
+          <div className="mt-4 h-4" />
+        )}
+        <p className="mt-2 text-[10px] font-medium text-slate-400">
+          {growthStats.daysAgo !== null
+            ? `${t('home.summary.lastRecord')}: ${growthStats.daysAgo}${t('home.summary.daysAgo')}`
+            : t('home.summary.noRecords')}
+        </p>
+      </div>
+    </div>
   )
 }

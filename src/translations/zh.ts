@@ -387,6 +387,13 @@ export const zh: Record<TranslationKey, string> = {
   'home.status.noData': '暂无数据',
   'home.status.normal': '正常',
   'home.status.ago': '前',
+  'home.status.currentlyContent': '状态良好',
+  'home.status.currentlySleeping': '正在睡觉',
+  'home.status.mayNeedAttention': '可能需要关注',
+  'home.status.dailyGoal': '每日目标',
+  'home.status.lastFeedShort': '上次喂养',
+  'home.status.awakeFor': '清醒',
+  'home.status.diaperShort': '尿布',
 
   // Home Shift Card
   'home.shift.title': '当前值班',
@@ -394,7 +401,9 @@ export const zh: Record<TranslationKey, string> = {
   'home.shift.sleeping': '休息中',
   'home.shift.standby': '待命',
   'home.shift.noShift': '未安排值班',
-  'home.shift.setup': '在分工看板中安排值班',
+  'home.shift.setup': '安排值班',
+  'home.shift.currentCaregiver': '当前照护者',
+  'home.shift.shiftEnds': '值班结束',
 
   // Shift Scheduler
   'shift.title': '值班安排',
@@ -426,6 +435,24 @@ export const zh: Record<TranslationKey, string> = {
   'home.summary.wet': '湿',
   'home.summary.dirty': '脏',
   'home.summary.mixed': '混合',
+  'home.summary.naps': '次小睡',
+  'home.summary.totalToday': '今日总计',
+  'home.summary.last': '上次',
+  'home.summary.weight': '体重',
+  'home.summary.thisWeek': '本周',
+  'home.summary.lastRecord': '上次记录',
+  'home.summary.daysAgo': '天前',
+
+  // Home Timeline
+  'home.timeline.title': '最近动态',
+  'home.timeline.seeAll': '查看全部',
+  'home.timeline.wokeUp': '睡醒了',
+  'home.timeline.fellAsleep': '入睡了',
+  'home.timeline.feeding': '喂养',
+  'home.timeline.bottleFeeding': '奶瓶喂养',
+  'home.timeline.breastFeeding': '母乳喂养',
+  'home.timeline.diaperChange': '换尿布',
+  'home.timeline.sleptFor': '睡了',
 
   // Common
   'common.save': '保存',
