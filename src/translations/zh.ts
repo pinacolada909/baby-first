@@ -277,6 +277,10 @@ export const zh: Record<TranslationKey, string> = {
   'baby.noBabies': '还没有宝宝档案，添加一个开始吧！',
   'baby.created': '宝宝档案已创建',
   'baby.deleted': '宝宝档案已删除',
+  'baby.recoveringCaregiver': '恢复中的照护者',
+  'baby.recoveringCaregiver.description': '指定一位正在恢复的照护者（如产后），以在仪表盘启用恢复追踪。',
+  'baby.recoveringCaregiver.none': '无',
+  'baby.recoveringCaregiver.updated': '恢复中的照护者已更新',
 
   // Caregivers
   'caregiver.title': '照护者',

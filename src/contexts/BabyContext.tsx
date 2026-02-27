@@ -21,7 +21,7 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('baby_caregivers')
-        .select('baby_id, babies(id, name, birth_date, created_at)')
+        .select('baby_id, babies(id, name, birth_date, recovering_caregiver_id, created_at)')
         .eq('user_id', user!.id)
 
       if (error) throw error

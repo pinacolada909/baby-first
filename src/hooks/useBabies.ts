@@ -23,6 +23,20 @@ export function useCreateBaby() {
   })
 }
 
+export function useUpdateBaby() {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  return useMutation({
+    mutationFn: async ({ babyId, updates }: { babyId: string; updates: Record<string, unknown> }) => {
+      const { error } = await supabase.from('babies').update(updates).eq('id', babyId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.babies.all(user!.id) })
+    },
+  })
+}
+
 export function useDeleteBaby() {
   const queryClient = useQueryClient()
   const { user } = useAuth()

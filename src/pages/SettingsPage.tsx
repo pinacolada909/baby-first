@@ -3,13 +3,20 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useCaregivers } from '@/hooks/useCaregivers'
-import { useDeleteBaby } from '@/hooks/useBabies'
+import { useDeleteBaby, useUpdateBaby } from '@/hooks/useBabies'
 import type { BabyCaregiver } from '@/types'
 import { CaregiverManager } from '@/components/baby/CaregiverManager'
 import { EmailSettings } from '@/components/settings/EmailSettings'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -18,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Baby, Trash2 } from 'lucide-react'
+import { Baby, Trash2, Heart } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function SettingsPage() {
@@ -89,6 +96,7 @@ export function SettingsPage() {
                   babyId={baby.id}
                   name={baby.name}
                   birthDate={baby.birth_date}
+                  recoveringCaregiverId={baby.recovering_caregiver_id}
                   isSelected={selectedBaby?.id === baby.id}
                   userId={user?.id}
                   onDelete={() => setPendingDeleteId(baby.id)}
@@ -137,6 +145,7 @@ function BabyProfileRow({
   babyId,
   name,
   birthDate,
+  recoveringCaregiverId,
   isSelected,
   userId,
   onDelete,
@@ -144,44 +153,95 @@ function BabyProfileRow({
   babyId: string
   name: string
   birthDate: string | null
+  recoveringCaregiverId: string | null
   isSelected: boolean
   userId?: string
   onDelete: () => void
 }) {
   const { t } = useLanguage()
   const { data: caregivers = [] } = useCaregivers(babyId)
+  const updateBaby = useUpdateBaby()
   const isPrimary = caregivers.some(
     (c: BabyCaregiver) => c.user_id === userId && c.role === 'primary',
   )
   const role = caregivers.find((c: BabyCaregiver) => c.user_id === userId)?.role
 
+  const handleRecoveringChange = async (value: string) => {
+    const newId = value === '__none__' ? null : value
+    try {
+      await updateBaby.mutateAsync({
+        babyId,
+        updates: { recovering_caregiver_id: newId },
+      })
+      toast.success(t('baby.recoveringCaregiver.updated'))
+    } catch {
+      toast.error(t('common.error'))
+    }
+  }
+
   return (
     <div
-      className={`flex items-center justify-between rounded-lg border p-3 ${
+      className={`rounded-lg border p-3 space-y-3 ${
         isSelected ? 'border-[#a78bfa] bg-violet-50/50' : ''
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{name}</span>
-            {role && (
-              <Badge variant={role === 'primary' ? 'default' : 'outline'} className="text-xs">
-                {role === 'primary' ? t('caregiver.role.primary') : t('caregiver.role.member')}
-              </Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{name}</span>
+              {role && (
+                <Badge variant={role === 'primary' ? 'default' : 'outline'} className="text-xs">
+                  {role === 'primary' ? t('caregiver.role.primary') : t('caregiver.role.member')}
+                </Badge>
+              )}
+            </div>
+            {birthDate && (
+              <p className="text-xs text-muted-foreground">
+                {new Date(birthDate).toLocaleDateString()}
+              </p>
             )}
           </div>
-          {birthDate && (
-            <p className="text-xs text-muted-foreground">
-              {new Date(birthDate).toLocaleDateString()}
-            </p>
-          )}
         </div>
+        {isPrimary && (
+          <Button variant="ghost" size="icon" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        )}
       </div>
-      {isPrimary && (
-        <Button variant="ghost" size="icon" onClick={onDelete}>
-          <Trash2 className="h-4 w-4 text-destructive" />
-        </Button>
+
+      {/* Recovering caregiver selector — only visible to primary caregiver */}
+      {isPrimary && caregivers.length > 0 && (
+        <div className="rounded-lg border border-purple-100 bg-purple-50/50 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <Heart className="size-4 text-purple-500" />
+            <span className="text-sm font-medium text-purple-700">
+              {t('baby.recoveringCaregiver')}
+            </span>
+          </div>
+          <p className="text-xs text-purple-600/70">
+            {t('baby.recoveringCaregiver.description')}
+          </p>
+          <Select
+            value={recoveringCaregiverId ?? '__none__'}
+            onValueChange={handleRecoveringChange}
+            disabled={updateBaby.isPending}
+          >
+            <SelectTrigger className="w-full bg-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">
+                {t('baby.recoveringCaregiver.none')}
+              </SelectItem>
+              {caregivers.map((c: BabyCaregiver) => (
+                <SelectItem key={c.user_id} value={c.user_id}>
+                  {c.display_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
     </div>
   )

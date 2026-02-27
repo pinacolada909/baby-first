@@ -275,6 +275,10 @@ export const en = {
   'baby.noBabies': 'No baby profiles yet. Add one to get started!',
   'baby.created': 'Baby profile created',
   'baby.deleted': 'Baby profile deleted',
+  'baby.recoveringCaregiver': 'Recovering Caregiver',
+  'baby.recoveringCaregiver.description': 'Designate a caregiver who is recovering (e.g. postpartum) to enable recovery tracking on the Dashboard.',
+  'baby.recoveringCaregiver.none': 'None',
+  'baby.recoveringCaregiver.updated': 'Recovering caregiver updated',
 
   // Caregivers
   'caregiver.title': 'Caregivers',
