@@ -3,10 +3,11 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useFeedings, useAddFeeding, useDeleteFeeding } from '@/hooks/useFeedings'
+import { useMilkStash, useUseMilkStash } from '@/hooks/useMilkStash'
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
-import type { Feeding, FeedingType, BabyCaregiver, ParsedFeedingData } from '@/types'
+import type { Feeding, FeedingType, BabyCaregiver, MilkStash, ParsedFeedingData } from '@/types'
 import { VoiceInputButton } from '@/components/voice/VoiceInputButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -43,8 +44,10 @@ export function FeedingTrackerPage() {
 
   const { data: dbFeedings = [] } = useFeedings(babyId)
   const { data: caregivers = [] } = useCaregivers(babyId)
+  const { data: dbStash = [] } = useMilkStash(babyId)
   const addMutation = useAddFeeding()
   const deleteMutation = useDeleteFeeding()
+  const useStashMutation = useUseMilkStash()
   useRealtimeSync('feedings', babyId, queryKeys.feeding.byBaby(babyId ?? ''))
 
   const isPrimary = caregivers.some(
@@ -61,7 +64,16 @@ export function FeedingTrackerPage() {
   const [volume, setVolume] = useState('')
   const [duration, setDuration] = useState('')
   const [notes, setNotes] = useState('')
+  const [selectedStashId, setSelectedStashId] = useState<string>('')
   const [period, setPeriod] = useState('day')
+
+  // Available stash items for "From Stash" selector (FIFO order, oldest first)
+  const availableStash = useMemo<MilkStash[]>(() => {
+    if (isDemo) return []
+    return dbStash
+      .filter((s) => s.volume_ml - s.used_ml > 0)
+      .sort((a, b) => new Date(a.stored_at).getTime() - new Date(b.stored_at).getTime())
+  }, [dbStash, isDemo])
 
   const todayFeedings = useMemo(() => feedings.filter((f) => isToday(f.fed_at)), [feedings])
   const todayTotal = useMemo(() => todayFeedings.reduce((s, f) => s + (f.volume_ml ?? 0), 0), [todayFeedings])
@@ -129,6 +141,7 @@ export function FeedingTrackerPage() {
       feeding_type: feedingType,
       volume_ml: vol,
       duration_minutes: dur,
+      milk_stash_id: selectedStashId || null,
       notes: notes || null,
     }
 
@@ -139,10 +152,19 @@ export function FeedingTrackerPage() {
       ])
     } else {
       await addMutation.mutateAsync(feeding)
+      // Auto-deduct from stash if selected
+      if (selectedStashId && vol && vol > 0) {
+        try {
+          await useStashMutation.mutateAsync({ stashId: selectedStashId, volumeMl: vol, babyId: babyId! })
+        } catch {
+          // Stash deduction failed but feeding was logged - that's ok
+        }
+      }
     }
     setNotes('')
     setVolume('')
     setDuration('')
+    setSelectedStashId('')
     setTime(formatDatetimeLocal(new Date()))
     toast.success(t('feeding.added'))
   }
@@ -221,6 +243,27 @@ export function FeedingTrackerPage() {
             <div>
               <Label>{t('feeding.duration')}</Label>
               <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="min" />
+            </div>
+          )}
+          {feedingType === 'breastmilk' && availableStash.length > 0 && volume && (
+            <div>
+              <Label>{t('feeding.fromStash')}</Label>
+              <select
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={selectedStashId}
+                onChange={(e) => setSelectedStashId(e.target.value)}
+              >
+                <option value="">{t('feeding.fromStash.none')}</option>
+                {availableStash.map((s) => {
+                  const remaining = s.volume_ml - s.used_ml
+                  const age = Math.floor((Date.now() - new Date(s.stored_at).getTime()) / (1000 * 60 * 60 * 24))
+                  return (
+                    <option key={s.id} value={s.id}>
+                      {s.storage_type === 'fridge' ? '🧊' : '❄️'} {remaining}mL • {age}d
+                    </option>
+                  )
+                })}
+              </select>
             </div>
           )}
           <div>

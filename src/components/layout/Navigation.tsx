@@ -7,6 +7,7 @@ import {
   UtensilsCrossed,
   Clock,
   Ruler,
+  Droplets,
   LogIn,
   LogOut,
   User,
@@ -37,6 +38,7 @@ const navLinks: { to: string; labelKey: TranslationKey; icon: typeof Home }[] = 
   { to: '/diaper-tracker', labelKey: 'nav.diaper', icon: Baby },
   { to: '/feeding-tracker', labelKey: 'nav.feeding', icon: UtensilsCrossed },
   { to: '/growth', labelKey: 'nav.growth', icon: Ruler },
+  { to: '/pumping-tracker', labelKey: 'nav.pumping', icon: Droplets },
   { to: '/time-management', labelKey: 'nav.time', icon: Clock },
 ]
 

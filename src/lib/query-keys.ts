@@ -37,6 +37,12 @@ export const queryKeys = {
   milestones: {
     byBaby: (babyId: string) => ['milestones', babyId] as const,
   },
+  pumping: {
+    byBaby: (babyId: string) => ['pumping', babyId] as const,
+  },
+  milkStash: {
+    byBaby: (babyId: string) => ['milkStash', babyId] as const,
+  },
   profile: {
     byUser: (userId: string) => ['profile', userId] as const,
   },

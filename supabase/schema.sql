@@ -656,3 +656,120 @@ CREATE POLICY "time_blocks_update"
   TO authenticated
   USING (public.is_baby_caregiver(baby_id, auth.uid()))
   WITH CHECK (public.is_baby_caregiver(baby_id, auth.uid()));
+
+-- ============================================================
+-- 12. PUMPING SESSIONS & MILK STASH
+-- ============================================================
+
+-- ---- pumping_sessions ----
+CREATE TABLE public.pumping_sessions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id          UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id     UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  pumped_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  duration_minutes INT,
+  volume_ml        INT NOT NULL,
+  side             TEXT NOT NULL CHECK (side IN ('left', 'right', 'both')),
+  storage          TEXT NOT NULL CHECK (storage IN ('fed_immediately', 'fridge', 'freezer')),
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.pumping_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "pumping_sessions_select"
+  ON public.pumping_sessions FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "pumping_sessions_insert"
+  ON public.pumping_sessions FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "pumping_sessions_delete"
+  ON public.pumping_sessions FOR DELETE
+  TO authenticated
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
+
+CREATE INDEX idx_pumping_sessions_baby_id   ON public.pumping_sessions (baby_id);
+CREATE INDEX idx_pumping_sessions_pumped_at ON public.pumping_sessions (pumped_at);
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.pumping_sessions;
+
+-- ---- milk_stash ----
+CREATE TABLE public.milk_stash (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id             UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  pumping_session_id  UUID REFERENCES public.pumping_sessions ON DELETE SET NULL,
+  stored_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  storage_type        TEXT NOT NULL CHECK (storage_type IN ('fridge', 'freezer')),
+  volume_ml           INT NOT NULL,
+  used_ml             INT NOT NULL DEFAULT 0,
+  notes               TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.milk_stash ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "milk_stash_select"
+  ON public.milk_stash FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "milk_stash_insert"
+  ON public.milk_stash FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "milk_stash_update"
+  ON public.milk_stash FOR UPDATE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()))
+  WITH CHECK (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "milk_stash_delete"
+  ON public.milk_stash FOR DELETE
+  TO authenticated
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR EXISTS (
+      SELECT 1 FROM public.pumping_sessions ps
+      WHERE ps.id = pumping_session_id
+        AND ps.caregiver_id = auth.uid()
+    )
+  );
+
+CREATE INDEX idx_milk_stash_baby_id   ON public.milk_stash (baby_id);
+CREATE INDEX idx_milk_stash_stored_at ON public.milk_stash (stored_at);
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.milk_stash;
+
+-- ---- feedings: add optional milk_stash link ----
+ALTER TABLE public.feedings ADD COLUMN IF NOT EXISTS milk_stash_id UUID REFERENCES public.milk_stash ON DELETE SET NULL;
+
+-- ---- RPC: atomic milk stash deduction ----
+CREATE OR REPLACE FUNCTION public.use_milk_stash(
+  _stash_id UUID,
+  _volume_ml INT
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE public.milk_stash
+  SET used_ml = used_ml + _volume_ml
+  WHERE id = _stash_id
+    AND (used_ml + _volume_ml) <= volume_ml;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Insufficient milk in stash or stash not found';
+  END IF;
+END;
+$$;

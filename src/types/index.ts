@@ -90,6 +90,7 @@ export interface Feeding {
   feeding_type: FeedingType
   volume_ml: number | null
   duration_minutes: number | null
+  milk_stash_id: string | null
   notes: string | null
   created_at: string
 }
@@ -126,6 +127,35 @@ export interface CareTask {
   created_at: string
 }
 
+// Pumping & Milk Stash
+export type PumpingSide = 'left' | 'right' | 'both'
+export type StorageDestination = 'fed_immediately' | 'fridge' | 'freezer'
+
+export interface PumpingSession {
+  id: string
+  baby_id: string
+  caregiver_id: string
+  pumped_at: string
+  duration_minutes: number | null
+  volume_ml: number
+  side: PumpingSide
+  storage: StorageDestination
+  notes: string | null
+  created_at: string
+}
+
+export interface MilkStash {
+  id: string
+  baby_id: string
+  pumping_session_id: string | null
+  stored_at: string
+  storage_type: 'fridge' | 'freezer'
+  volume_ml: number
+  used_ml: number
+  notes: string | null
+  created_at: string
+}
+
 // Growth & Milestones
 export interface GrowthRecord {
   id: string
@@ -148,7 +178,7 @@ export interface MilestoneRecord {
 }
 
 // Voice Input Types
-export type TrackerType = 'sleep' | 'feeding' | 'diaper' | 'growth'
+export type TrackerType = 'sleep' | 'feeding' | 'diaper' | 'growth' | 'pumping'
 
 export interface ParsedSleepData {
   start_time: string | null
@@ -178,4 +208,13 @@ export interface ParsedGrowthData {
   notes: string | null
 }
 
-export type ParsedFormData = ParsedSleepData | ParsedFeedingData | ParsedDiaperData | ParsedGrowthData
+export interface ParsedPumpingData {
+  time: string | null
+  duration_minutes: number | null
+  volume_ml: number | null
+  side: PumpingSide | null
+  storage: StorageDestination | null
+  notes: string | null
+}
+
+export type ParsedFormData = ParsedSleepData | ParsedFeedingData | ParsedDiaperData | ParsedGrowthData | ParsedPumpingData

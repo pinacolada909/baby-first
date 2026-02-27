@@ -4,10 +4,11 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useSleepSessions } from '@/hooks/useSleepSessions'
 import { useFeedings } from '@/hooks/useFeedings'
 import { useDiaperChanges } from '@/hooks/useDiaperChanges'
-import { Moon, Sun, Utensils, Baby } from 'lucide-react'
+import { usePumpingSessions } from '@/hooks/usePumpingSessions'
+import { Moon, Sun, Utensils, Baby, Droplets } from 'lucide-react'
 
 interface TimelineEvent {
-  type: 'sleep' | 'feeding' | 'diaper'
+  type: 'sleep' | 'feeding' | 'diaper' | 'pumping'
   time: string
   label: string
   detail: string
@@ -35,6 +36,7 @@ export function RecentTimeline({ babyId }: RecentTimelineProps) {
   const { data: sleepSessions = [] } = useSleepSessions(babyId)
   const { data: feedings = [] } = useFeedings(babyId)
   const { data: diaperChanges = [] } = useDiaperChanges(babyId)
+  const { data: pumpingSessions = [] } = usePumpingSessions(babyId)
 
   const events = useMemo(() => {
     const items: TimelineEvent[] = []
@@ -84,10 +86,21 @@ export function RecentTimeline({ babyId }: RecentTimelineProps) {
       })
     }
 
+    // Pumping events
+    for (const p of pumpingSessions.slice(0, 10)) {
+      const sideLabel = t(`pumping.side.${p.side}` as const)
+      items.push({
+        type: 'pumping',
+        time: p.pumped_at,
+        label: t('home.timeline.pumped'),
+        detail: `${p.volume_ml}ml • ${sideLabel}`,
+      })
+    }
+
     // Sort by time descending, take top 6
     items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
     return items.slice(0, 6)
-  }, [sleepSessions, feedings, diaperChanges, t])
+  }, [sleepSessions, feedings, diaperChanges, pumpingSessions, t])
 
   if (events.length === 0) return null
 
@@ -95,6 +108,7 @@ export function RecentTimeline({ babyId }: RecentTimelineProps) {
     sleep: { bg: 'bg-indigo-100', color: 'text-indigo-500', Icon: Moon },
     feeding: { bg: 'bg-rose-100', color: 'text-rose-500', Icon: Utensils },
     diaper: { bg: 'bg-emerald-100', color: 'text-emerald-500', Icon: Baby },
+    pumping: { bg: 'bg-fuchsia-100', color: 'text-fuchsia-500', Icon: Droplets },
   }
 
   // Use Sun icon for wake-up events

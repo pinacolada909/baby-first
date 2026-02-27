@@ -5,7 +5,8 @@ import { useSleepSessions } from '@/hooks/useSleepSessions'
 import { useFeedings } from '@/hooks/useFeedings'
 import { useDiaperChanges } from '@/hooks/useDiaperChanges'
 import { useGrowthRecords } from '@/hooks/useGrowthRecords'
-import { Moon, Utensils, Sparkles, Ruler, TrendingUp } from 'lucide-react'
+import { usePumpingSessions } from '@/hooks/usePumpingSessions'
+import { Moon, Utensils, Sparkles, Ruler, Droplets, TrendingUp } from 'lucide-react'
 
 function isToday(dateStr: string): boolean {
   const d = new Date(dateStr)
@@ -41,6 +42,7 @@ export function TrackerSummaryCards({ babyId }: TrackerSummaryCardsProps) {
   const { data: feedings = [] } = useFeedings(babyId)
   const { data: diaperChanges = [] } = useDiaperChanges(babyId)
   const { data: growthRecords = [] } = useGrowthRecords(babyId)
+  const { data: pumpingSessions = [] } = usePumpingSessions(babyId)
 
   // Sleep stats
   const sleepStats = useMemo(() => {
@@ -87,10 +89,18 @@ export function TrackerSummaryCards({ babyId }: TrackerSummaryCardsProps) {
     return { latest, delta, daysAgo }
   }, [growthRecords])
 
+  // Pumping stats
+  const pumpingStats = useMemo(() => {
+    const todaySessions = pumpingSessions.filter((s) => isToday(s.pumped_at))
+    const totalMl = todaySessions.reduce((sum, s) => sum + s.volume_ml, 0)
+    const lastSession = todaySessions[0] ?? null
+    return { count: todaySessions.length, totalMl, lastSession }
+  }, [pumpingSessions])
+
   const barColors = ['bg-indigo-200', 'bg-indigo-500', 'bg-indigo-300', 'bg-indigo-400']
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
       {/* Sleep Card */}
       <div
         className="relative cursor-pointer overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
@@ -244,6 +254,60 @@ export function TrackerSummaryCards({ babyId }: TrackerSummaryCardsProps) {
           {growthStats.daysAgo !== null
             ? `${t('home.summary.lastRecord')}: ${growthStats.daysAgo}${t('home.summary.daysAgo')}`
             : t('home.summary.noRecords')}
+        </p>
+      </div>
+
+      {/* Pumping Card */}
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md"
+        onClick={() => navigate('/pumping-tracker')}
+      >
+        <div className="absolute right-0 top-0 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-500">
+            <Droplets className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="mt-8 space-y-1">
+          <h4 className="text-sm font-bold text-slate-500">{t('home.summary.pumping')}</h4>
+          {pumpingStats.count > 0 ? (
+            <p className="text-2xl font-black">
+              {pumpingStats.totalMl}{' '}
+              <span className="text-sm font-bold text-slate-400">ml</span>
+            </p>
+          ) : (
+            <p className="text-lg font-bold text-slate-300">{t('home.summary.noData')}</p>
+          )}
+        </div>
+        <div className="mt-4 flex items-end gap-1" style={{ height: 32 }}>
+          {pumpingStats.count > 0 ? (
+            <>
+              {(() => {
+                const todaySessions = pumpingSessions.filter((s) => isToday(s.pumped_at))
+                const leftMl = todaySessions.filter((s) => s.side === 'left').reduce((sum, s) => sum + s.volume_ml, 0)
+                const rightMl = todaySessions.filter((s) => s.side === 'right').reduce((sum, s) => sum + s.volume_ml, 0)
+                const bothMl = todaySessions.filter((s) => s.side === 'both').reduce((sum, s) => sum + s.volume_ml, 0)
+                const max = Math.max(leftMl, rightMl, bothMl, 1)
+                return (
+                  <>
+                    <div className="w-full rounded-full bg-pink-300" style={{ height: Math.max(6, Math.round((leftMl / max) * 32)) }} />
+                    <div className="w-full rounded-full bg-blue-300" style={{ height: Math.max(6, Math.round((rightMl / max) * 32)) }} />
+                    <div className="w-full rounded-full bg-purple-300" style={{ height: Math.max(6, Math.round((bothMl / max) * 32)) }} />
+                  </>
+                )
+              })()}
+            </>
+          ) : (
+            <>
+              <div className="w-full rounded-full bg-slate-100" style={{ height: 12 }} />
+              <div className="w-full rounded-full bg-slate-100" style={{ height: 20 }} />
+              <div className="w-full rounded-full bg-slate-100" style={{ height: 16 }} />
+            </>
+          )}
+        </div>
+        <p className="mt-2 text-[10px] font-medium text-slate-400">
+          {pumpingStats.lastSession
+            ? `${pumpingStats.count} ${t('home.summary.sessions')} • ${t('home.summary.totalToday')}`
+            : t('home.summary.noData')}
         </p>
       </div>
     </div>

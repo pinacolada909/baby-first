@@ -36,6 +36,15 @@ interface Feeding {
   notes: string | null
 }
 
+interface PumpingSession {
+  pumped_at: string
+  duration_minutes: number | null
+  volume_ml: number
+  side: string
+  storage: string
+  notes: string | null
+}
+
 function formatDate(isoString: string): string {
   const d = new Date(isoString)
   return d.toLocaleString('en-US', {
@@ -81,6 +90,14 @@ function generateFeedingCSV(feedings: Feeding[]): string {
   const header = 'Time,Type,Volume (mL),Duration (min),Notes'
   const rows = feedings.map(f =>
     `${escapeCSV(formatDate(f.fed_at))},${escapeCSV(f.feeding_type)},${escapeCSV(f.volume_ml)},${escapeCSV(f.duration_minutes)},${escapeCSV(f.notes)}`
+  )
+  return [header, ...rows].join('\n')
+}
+
+function generatePumpingCSV(sessions: PumpingSession[]): string {
+  const header = 'Time,Duration (min),Volume (mL),Side,Storage,Notes'
+  const rows = sessions.map(s =>
+    `${escapeCSV(formatDate(s.pumped_at))},${escapeCSV(s.duration_minutes)},${s.volume_ml},${escapeCSV(s.side)},${escapeCSV(s.storage)},${escapeCSV(s.notes)}`
   )
   return [header, ...rows].join('\n')
 }
@@ -168,7 +185,7 @@ Deno.serve(async (req) => {
         const babyNames = caregivers.map(c => (c.babies as { name: string })?.name || 'Baby').join(', ')
 
         // Fetch today's data for all babies
-        const [sleepResult, diaperResult, feedingResult] = await Promise.all([
+        const [sleepResult, diaperResult, feedingResult, pumpingResult] = await Promise.all([
           supabase
             .from('sleep_sessions')
             .select('start_time, end_time, duration_hours, notes')
@@ -190,22 +207,33 @@ Deno.serve(async (req) => {
             .gte('fed_at', todayStartISO)
             .lt('fed_at', todayEndISO)
             .order('fed_at', { ascending: true }),
+          supabase
+            .from('pumping_sessions')
+            .select('pumped_at, duration_minutes, volume_ml, side, storage, notes')
+            .in('baby_id', babyIds)
+            .gte('pumped_at', todayStartISO)
+            .lt('pumped_at', todayEndISO)
+            .order('pumped_at', { ascending: true }),
         ])
 
         const sleepData = (sleepResult.data || []) as SleepSession[]
         const diaperData = (diaperResult.data || []) as DiaperChange[]
         const feedingData = (feedingResult.data || []) as Feeding[]
+        const pumpingData = (pumpingResult.data || []) as PumpingSession[]
 
         // Generate CSVs
         const sleepCSV = generateSleepCSV(sleepData)
         const diaperCSV = generateDiaperCSV(diaperData)
         const feedingCSV = generateFeedingCSV(feedingData)
+        const pumpingCSV = generatePumpingCSV(pumpingData)
 
         // Calculate summary stats
         const totalSleepHours = sleepData.reduce((sum, s) => sum + s.duration_hours, 0)
         const totalFeedings = feedingData.length
         const totalDiapers = diaperData.length
         const totalVolume = feedingData.reduce((sum, f) => sum + (f.volume_ml || 0), 0)
+        const totalPumping = pumpingData.length
+        const totalPumpedMl = pumpingData.reduce((sum, p) => sum + p.volume_ml, 0)
 
         const dateStr = pstNow.toLocaleDateString('en-US', {
           weekday: 'long',
@@ -228,6 +256,7 @@ Deno.serve(async (req) => {
               <li><strong>Total Sleep:</strong> ${totalSleepHours.toFixed(1)} hours (${sleepData.length} sessions)</li>
               <li><strong>Total Feedings:</strong> ${totalFeedings} (${totalVolume} mL total)</li>
               <li><strong>Diaper Changes:</strong> ${totalDiapers}</li>
+              <li><strong>Pumping Sessions:</strong> ${totalPumping} (${totalPumpedMl} mL total)</li>
             </ul>
 
             <p>Detailed CSV files are attached below.</p>
@@ -249,6 +278,10 @@ Deno.serve(async (req) => {
             {
               filename: 'feeding_summary.csv',
               content: btoa(feedingCSV),
+            },
+            {
+              filename: 'pumping_summary.csv',
+              content: btoa(pumpingCSV),
             },
           ],
         })

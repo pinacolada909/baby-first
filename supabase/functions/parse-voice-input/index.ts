@@ -11,7 +11,7 @@ function getCorsHeaders(req: Request) {
   }
 }
 
-const VALID_TRACKER_TYPES = ['sleep', 'feeding', 'diaper', 'growth'] as const
+const VALID_TRACKER_TYPES = ['sleep', 'feeding', 'diaper', 'growth', 'pumping'] as const
 type TrackerType = (typeof VALID_TRACKER_TYPES)[number]
 
 function buildSystemPrompt(trackerType: TrackerType, currentTime: string): string {
@@ -64,6 +64,18 @@ Respond with: { "data": { "time": ..., "status": ..., "notes": ... }, "confidenc
 Chinese input mappings: "公斤/千克/斤" = kg (note: 1斤 = 0.5kg), "厘米/公分" = cm, "头围" = head circumference, "身高/身长" = height, "体重" = weight
 
 Respond with: { "data": { "date": ..., "weight_kg": ..., "height_cm": ..., "head_cm": ..., "notes": ... }, "confidence": "high"|"medium"|"low" }`,
+
+    pumping: `Extract these fields:
+- time: ISO 8601 datetime string (default: current time if not specified), or null
+- duration_minutes: number (minutes), or null
+- volume_ml: number (milliliters), or null
+- side: one of "left", "right", "both", or null
+- storage: one of "fed_immediately", "fridge", "freezer", or null
+- notes: any additional info not fitting other fields, or null
+
+Chinese input mappings: "左边/左侧/左" = left, "右边/右侧/右" = right, "双侧/两侧/两边" = both, "直接喂/直接吃" = fed_immediately, "冰箱/冷藏" = fridge, "冷冻/冻" = freezer, "吸奶/泵奶/挤奶" = pumping, "毫升/ml" = milliliters
+
+Respond with: { "data": { "time": ..., "duration_minutes": ..., "volume_ml": ..., "side": ..., "storage": ..., "notes": ... }, "confidence": "high"|"medium"|"low" }`,
   }
 
   return base + schemas[trackerType] + `
@@ -106,7 +118,7 @@ Deno.serve(async (req) => {
 
     if (!VALID_TRACKER_TYPES.includes(tracker_type)) {
       return new Response(
-        JSON.stringify({ success: false, error: 'tracker_type must be sleep, feeding, diaper, or growth' }),
+        JSON.stringify({ success: false, error: 'tracker_type must be sleep, feeding, diaper, growth, or pumping' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
