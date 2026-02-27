@@ -3,14 +3,15 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useSleepSessions } from '@/hooks/useSleepSessions'
 import { useFeedings } from '@/hooks/useFeedings'
-import { useTimeBlocks, useAddTimeBlock, useUpdateTimeBlock } from '@/hooks/useTimeBlocks'
+import { useTimeBlocks, useAddTimeBlock, useUpdateTimeBlock, useDeleteTimeBlock } from '@/hooks/useTimeBlocks'
 import { useCaregivers } from '@/hooks/useCaregivers'
+import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Baby, Shield, Lock, ChevronRight, ChevronDown, AlertTriangle,
-  Users, Loader2, Play, Clock, Plus,
+  Users, Loader2, Play, Clock, Plus, Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TimeBlock, BabyCaregiver } from '@/types'
@@ -38,9 +39,11 @@ interface FamilyStatusCardProps {
 
 export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const { t } = useLanguage()
+  const { user } = useAuth()
   const { selectedBaby } = useBaby()
   const [historyOpen, setHistoryOpen] = useState(true)
   const [showLogForm, setShowLogForm] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   // Log form state
   const [logCaregiver, setLogCaregiver] = useState('')
@@ -54,6 +57,12 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const { data: caregivers = [] } = useCaregivers(babyId)
   const addBlock = useAddTimeBlock()
   const updateBlock = useUpdateTimeBlock()
+  const deleteBlock = useDeleteTimeBlock()
+
+  // Check if current user is primary caregiver
+  const isPrimary = caregivers.some(
+    (c: BabyCaregiver) => c.user_id === user?.id && c.role === 'primary',
+  )
 
   const now = Date.now()
   const isBusy = addBlock.isPending || updateBlock.isPending
@@ -240,6 +249,24 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
       toast.error(t('common.error'))
     }
   }
+
+  // Delete a shift record (primary caregiver or own record)
+  const handleDeleteShift = async (blockId: string) => {
+    if (!babyId) return
+    setDeletingId(blockId)
+    try {
+      await deleteBlock.mutateAsync({ id: blockId, babyId })
+      toast.success(t('shift.deleted'))
+    } catch {
+      toast.error(t('common.error'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  // Can delete if primary caregiver or own block
+  const canDelete = (block: TimeBlock) =>
+    isPrimary || block.caregiver_id === user?.id
 
   return (
     <Card className="border-slate-200 bg-white transition-all hover:shadow-md">
@@ -566,10 +593,23 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
                               </p>
                             </div>
 
-                            {/* Duration badge */}
+                            {/* Duration badge + delete */}
                             <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                               {formatDuration(duration)}
                             </span>
+                            {canDelete(block) && (
+                              <button
+                                onClick={() => handleDeleteShift(block.id)}
+                                disabled={deletingId === block.id}
+                                className="shrink-0 p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                              >
+                                {deletingId === block.id ? (
+                                  <Loader2 className="size-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="size-3.5" />
+                                )}
+                              </button>
+                            )}
                           </div>
                         )
                       })}
