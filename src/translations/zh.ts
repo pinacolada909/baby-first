@@ -236,6 +236,8 @@ export const zh: Record<TranslationKey, string> = {
   'dashboard.familyStatus.notifications': '消息',
   'dashboard.familyStatus.noCaregivers': '尚未添加照护者',
   'dashboard.familyStatus.noCaregivers.hint': '在设置中添加照护者以启用值班协调',
+  'dashboard.familyStatus.recentShifts': '今日值班记录',
+  'dashboard.familyStatus.noRecentShifts': '今天尚无已完成的值班',
 
   // Dashboard - Care Workload
   'dashboard.workload.12h': '过去12小时照护负荷',

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useSleepSessions } from '@/hooks/useSleepSessions'
@@ -7,7 +7,8 @@ import { useTimeBlocks, useAddTimeBlock, useUpdateTimeBlock } from '@/hooks/useT
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Baby, Shield, Lock, ChevronRight, AlertTriangle, Users, Loader2, Play } from 'lucide-react'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Baby, Shield, Lock, ChevronRight, ChevronDown, AlertTriangle, Users, Loader2, Play, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TimeBlock, BabyCaregiver } from '@/types'
 
@@ -17,6 +18,10 @@ function formatDuration(ms: number): string {
   const h = Math.floor(totalMin / 60)
   const m = totalMin % 60
   return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
+function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
 function isToday(dateStr: string): boolean {
@@ -31,6 +36,7 @@ interface FamilyStatusCardProps {
 export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const { t } = useLanguage()
   const { selectedBaby } = useBaby()
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   const { data: sleepSessions = [] } = useSleepSessions(babyId)
   const { data: feedings = [] } = useFeedings(babyId)
@@ -113,6 +119,21 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
     const totalRestHours = totalRestMs / 3600000
     return { isProtected: totalRestHours >= 2, totalRestHours }
   }, [recoveringId, timeBlocks, now])
+
+  // Today's completed shifts (for history log)
+  const todayShifts = useMemo(() => {
+    return timeBlocks
+      .filter(
+        (b: TimeBlock) =>
+          b.block_type === 'care' &&
+          isToday(b.start_time) &&
+          // Exclude the current active shift
+          (!currentShift || b.id !== currentShift.id),
+      )
+      .sort((a: TimeBlock, b: TimeBlock) =>
+        new Date(b.start_time).getTime() - new Date(a.start_time).getTime(),
+      )
+  }, [timeBlocks, currentShift])
 
   // Button targets: when shift active, show other caregivers; when no shift, show all caregivers
   const buttonTargets = currentShift
@@ -344,6 +365,69 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
                 </>
               )}
             </div>
+
+            {/* Today's Shift History — collapsible */}
+            {todayShifts.length > 0 && (
+              <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    <ChevronDown
+                      className={`size-4 text-slate-400 transition-transform duration-200 ${historyOpen ? '' : '-rotate-90'}`}
+                    />
+                    <Clock className="size-4 text-slate-400" />
+                    <span>{t('dashboard.familyStatus.recentShifts')}</span>
+                    <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+                      {todayShifts.length}
+                    </span>
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-2 space-y-1.5">
+                    {todayShifts.map((block: TimeBlock) => {
+                      const duration =
+                        new Date(block.end_time).getTime() - new Date(block.start_time).getTime()
+                      const isActive =
+                        new Date(block.start_time).getTime() <= now &&
+                        new Date(block.end_time).getTime() >= now
+                      return (
+                        <div
+                          key={block.id}
+                          className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-all ${
+                            isActive
+                              ? 'border-green-200 bg-green-50'
+                              : 'border-slate-100 bg-slate-50/50'
+                          }`}
+                        >
+                          {/* Timeline dot */}
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={`size-2.5 rounded-full ${
+                                isActive ? 'bg-green-500 animate-pulse' : 'bg-slate-300'
+                              }`}
+                            />
+                          </div>
+
+                          {/* Caregiver + time */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {caregiverName(block.caregiver_id)}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {formatTime(block.start_time)} — {formatTime(block.end_time)}
+                            </p>
+                          </div>
+
+                          {/* Duration badge */}
+                          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                            {formatDuration(duration)}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
           </>
         )}
       </CardContent>

@@ -234,6 +234,8 @@ export const en = {
   'dashboard.familyStatus.notifications': 'Notifications',
   'dashboard.familyStatus.noCaregivers': 'No caregivers added yet',
   'dashboard.familyStatus.noCaregivers.hint': 'Add caregivers in Settings to enable shift coordination',
+  'dashboard.familyStatus.recentShifts': "Today's Shifts",
+  'dashboard.familyStatus.noRecentShifts': 'No completed shifts today',
 
   // Dashboard - Care Workload
   'dashboard.workload.12h': 'Past 12h Care Workload',
