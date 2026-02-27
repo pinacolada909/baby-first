@@ -238,6 +238,15 @@ export const zh: Record<TranslationKey, string> = {
   'dashboard.familyStatus.noCaregivers.hint': '在设置中添加照护者以启用值班协调',
   'dashboard.familyStatus.recentShifts': '今日值班记录',
   'dashboard.familyStatus.noRecentShifts': '今天尚无已完成的值班',
+  'dashboard.familyStatus.logPastShift': '补录值班',
+  'dashboard.familyStatus.logPastShift.caregiver': '照护者',
+  'dashboard.familyStatus.logPastShift.start': '开始',
+  'dashboard.familyStatus.logPastShift.end': '结束',
+  'dashboard.familyStatus.logPastShift.type': '类型',
+  'dashboard.familyStatus.logPastShift.care': '照护',
+  'dashboard.familyStatus.logPastShift.rest': '休息',
+  'dashboard.familyStatus.logPastShift.save': '保存',
+  'dashboard.familyStatus.logPastShift.success': '值班记录已保存',
 
   // Dashboard - Care Workload
   'dashboard.workload.12h': '过去12小时照护负荷',

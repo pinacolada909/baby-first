@@ -236,6 +236,15 @@ export const en = {
   'dashboard.familyStatus.noCaregivers.hint': 'Add caregivers in Settings to enable shift coordination',
   'dashboard.familyStatus.recentShifts': "Today's Shifts",
   'dashboard.familyStatus.noRecentShifts': 'No completed shifts today',
+  'dashboard.familyStatus.logPastShift': 'Log Past Shift',
+  'dashboard.familyStatus.logPastShift.caregiver': 'Caregiver',
+  'dashboard.familyStatus.logPastShift.start': 'Start',
+  'dashboard.familyStatus.logPastShift.end': 'End',
+  'dashboard.familyStatus.logPastShift.type': 'Type',
+  'dashboard.familyStatus.logPastShift.care': 'Care',
+  'dashboard.familyStatus.logPastShift.rest': 'Rest',
+  'dashboard.familyStatus.logPastShift.save': 'Save',
+  'dashboard.familyStatus.logPastShift.success': 'Shift logged successfully',
 
   // Dashboard - Care Workload
   'dashboard.workload.12h': 'Past 12h Care Workload',

@@ -8,7 +8,10 @@ import { useCaregivers } from '@/hooks/useCaregivers'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Baby, Shield, Lock, ChevronRight, ChevronDown, AlertTriangle, Users, Loader2, Play, Clock } from 'lucide-react'
+import {
+  Baby, Shield, Lock, ChevronRight, ChevronDown, AlertTriangle,
+  Users, Loader2, Play, Clock, Plus,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import type { TimeBlock, BabyCaregiver } from '@/types'
 
@@ -36,7 +39,14 @@ interface FamilyStatusCardProps {
 export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const { t } = useLanguage()
   const { selectedBaby } = useBaby()
-  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(true)
+  const [showLogForm, setShowLogForm] = useState(false)
+
+  // Log form state
+  const [logCaregiver, setLogCaregiver] = useState('')
+  const [logStartTime, setLogStartTime] = useState('')
+  const [logEndTime, setLogEndTime] = useState('')
+  const [logType, setLogType] = useState<'care' | 'rest'>('care')
 
   const { data: sleepSessions = [] } = useSleepSessions(babyId)
   const { data: feedings = [] } = useFeedings(babyId)
@@ -120,14 +130,12 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
     return { isProtected: totalRestHours >= 2, totalRestHours }
   }, [recoveringId, timeBlocks, now])
 
-  // Today's completed shifts (for history log)
+  // Today's shifts (for history log) — both care and rest, excluding current active shift
   const todayShifts = useMemo(() => {
     return timeBlocks
       .filter(
         (b: TimeBlock) =>
-          b.block_type === 'care' &&
           isToday(b.start_time) &&
-          // Exclude the current active shift
           (!currentShift || b.id !== currentShift.id),
       )
       .sort((a: TimeBlock, b: TimeBlock) =>
@@ -197,6 +205,37 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
         updates: { end_time: newEnd.toISOString() },
       })
       toast.success(t('dashboard.familyStatus.extendSuccess'))
+    } catch {
+      toast.error(t('common.error'))
+    }
+  }
+
+  // Log a past shift that was forgotten
+  const handleLogPastShift = async () => {
+    const cgId = logCaregiver || caregivers[0]?.user_id
+    if (isDemo || !babyId || !cgId || !logStartTime || !logEndTime) return
+    try {
+      const today = new Date()
+      const [sh, sm] = logStartTime.split(':').map(Number)
+      const [eh, em] = logEndTime.split(':').map(Number)
+
+      const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), sh, sm)
+      const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), eh, em)
+      // Handle overnight (e.g., 22:00 — 06:00)
+      if (end <= start) end.setDate(end.getDate() + 1)
+
+      await addBlock.mutateAsync({
+        baby_id: babyId,
+        caregiver_id: cgId,
+        block_type: logType,
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        notes: null,
+      })
+      toast.success(t('dashboard.familyStatus.logPastShift.success'))
+      setShowLogForm(false)
+      setLogStartTime('')
+      setLogEndTime('')
     } catch {
       toast.error(t('common.error'))
     }
@@ -366,68 +405,179 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
               )}
             </div>
 
-            {/* Today's Shift History — collapsible */}
-            {todayShifts.length > 0 && (
-              <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+            {/* Today's Shift History + Log Past Shift */}
+            <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+              <div className="flex items-center gap-2">
                 <CollapsibleTrigger asChild>
-                  <button className="flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                  <button className="flex flex-1 items-center gap-2 rounded-lg px-1 py-1.5 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
                     <ChevronDown
                       className={`size-4 text-slate-400 transition-transform duration-200 ${historyOpen ? '' : '-rotate-90'}`}
                     />
                     <Clock className="size-4 text-slate-400" />
                     <span>{t('dashboard.familyStatus.recentShifts')}</span>
-                    <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
-                      {todayShifts.length}
-                    </span>
+                    {todayShifts.length > 0 && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+                        {todayShifts.length}
+                      </span>
+                    )}
                   </button>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-2 space-y-1.5">
-                    {todayShifts.map((block: TimeBlock) => {
-                      const duration =
-                        new Date(block.end_time).getTime() - new Date(block.start_time).getTime()
-                      const isActive =
-                        new Date(block.start_time).getTime() <= now &&
-                        new Date(block.end_time).getTime() >= now
-                      return (
-                        <div
-                          key={block.id}
-                          className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-all ${
-                            isActive
-                              ? 'border-green-200 bg-green-50'
-                              : 'border-slate-100 bg-slate-50/50'
-                          }`}
+                {!isDemo && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1 text-xs text-slate-500 hover:text-[#a78bfa]"
+                    onClick={() => setShowLogForm(!showLogForm)}
+                  >
+                    <Plus className="size-3.5" />
+                    {t('dashboard.familyStatus.logPastShift')}
+                  </Button>
+                )}
+              </div>
+              <CollapsibleContent>
+                <div className="mt-2 space-y-2">
+                  {/* Log Past Shift Form */}
+                  {showLogForm && (
+                    <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-3 space-y-3">
+                      <div className="flex flex-wrap items-end gap-2">
+                        {/* Caregiver */}
+                        <div className="min-w-[110px] flex-1">
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            {t('dashboard.familyStatus.logPastShift.caregiver')}
+                          </label>
+                          <select
+                            value={logCaregiver || caregivers[0]?.user_id || ''}
+                            onChange={(e) => setLogCaregiver(e.target.value)}
+                            className="h-9 w-full rounded-md border bg-white px-2 text-sm"
+                          >
+                            {caregivers.map((c: BabyCaregiver) => (
+                              <option key={c.user_id} value={c.user_id}>
+                                {c.display_name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {/* Start time */}
+                        <div className="w-[100px]">
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            {t('dashboard.familyStatus.logPastShift.start')}
+                          </label>
+                          <input
+                            type="time"
+                            value={logStartTime}
+                            onChange={(e) => setLogStartTime(e.target.value)}
+                            className="h-9 w-full rounded-md border bg-white px-2 text-sm"
+                          />
+                        </div>
+                        {/* End time */}
+                        <div className="w-[100px]">
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            {t('dashboard.familyStatus.logPastShift.end')}
+                          </label>
+                          <input
+                            type="time"
+                            value={logEndTime}
+                            onChange={(e) => setLogEndTime(e.target.value)}
+                            className="h-9 w-full rounded-md border bg-white px-2 text-sm"
+                          />
+                        </div>
+                        {/* Type */}
+                        <div className="w-[100px]">
+                          <label className="mb-1 block text-xs font-medium text-slate-600">
+                            {t('dashboard.familyStatus.logPastShift.type')}
+                          </label>
+                          <select
+                            value={logType}
+                            onChange={(e) => setLogType(e.target.value as 'care' | 'rest')}
+                            className="h-9 w-full rounded-md border bg-white px-2 text-sm"
+                          >
+                            <option value="care">{t('dashboard.familyStatus.logPastShift.care')}</option>
+                            <option value="rest">{t('dashboard.familyStatus.logPastShift.rest')}</option>
+                          </select>
+                        </div>
+                        {/* Save */}
+                        <Button
+                          size="sm"
+                          className="h-9"
+                          onClick={handleLogPastShift}
+                          disabled={!logStartTime || !logEndTime || addBlock.isPending}
                         >
-                          {/* Timeline dot */}
-                          <div className="flex flex-col items-center">
+                          {addBlock.isPending ? (
+                            <Loader2 className="size-4 animate-spin mr-1" />
+                          ) : null}
+                          {t('dashboard.familyStatus.logPastShift.save')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shift list */}
+                  {todayShifts.length === 0 ? (
+                    <p className="py-3 text-center text-xs text-slate-400">
+                      {t('dashboard.familyStatus.noRecentShifts')}
+                    </p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {todayShifts.map((block: TimeBlock) => {
+                        const duration =
+                          new Date(block.end_time).getTime() - new Date(block.start_time).getTime()
+                        const isActive =
+                          new Date(block.start_time).getTime() <= now &&
+                          new Date(block.end_time).getTime() >= now
+                        const isCare = block.block_type === 'care'
+                        return (
+                          <div
+                            key={block.id}
+                            className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-all ${
+                              isActive
+                                ? 'border-green-200 bg-green-50'
+                                : 'border-slate-100 bg-slate-50/50'
+                            }`}
+                          >
+                            {/* Timeline dot */}
                             <span
-                              className={`size-2.5 rounded-full ${
-                                isActive ? 'bg-green-500 animate-pulse' : 'bg-slate-300'
+                              className={`size-2.5 shrink-0 rounded-full ${
+                                isActive
+                                  ? 'bg-green-500 animate-pulse'
+                                  : isCare
+                                    ? 'bg-violet-400'
+                                    : 'bg-blue-300'
                               }`}
                             />
-                          </div>
 
-                          {/* Caregiver + time */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {caregiverName(block.caregiver_id)}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {formatTime(block.start_time)} — {formatTime(block.end_time)}
-                            </p>
-                          </div>
+                            {/* Caregiver + time */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-medium truncate">
+                                  {caregiverName(block.caregiver_id)}
+                                </p>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                                  isCare
+                                    ? 'bg-violet-100 text-violet-600'
+                                    : 'bg-blue-100 text-blue-600'
+                                }`}>
+                                  {isCare
+                                    ? t('dashboard.familyStatus.logPastShift.care')
+                                    : t('dashboard.familyStatus.logPastShift.rest')}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500">
+                                {formatTime(block.start_time)} — {formatTime(block.end_time)}
+                              </p>
+                            </div>
 
-                          {/* Duration badge */}
-                          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                            {formatDuration(duration)}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            )}
+                            {/* Duration badge */}
+                            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                              {formatDuration(duration)}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </>
         )}
       </CardContent>
