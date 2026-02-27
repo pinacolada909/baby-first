@@ -37,6 +37,25 @@ export function useAddTimeBlock() {
   })
 }
 
+export function useUpdateTimeBlock() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, babyId, updates }: { id: string; babyId: string; updates: Partial<Pick<TimeBlock, 'end_time' | 'notes'>> }) => {
+      const { data, error } = await supabase
+        .from('time_blocks')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return { ...data, babyId }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeBlocks.byBaby(variables.babyId) })
+    },
+  })
+}
+
 export function useDeleteTimeBlock() {
   const queryClient = useQueryClient()
   return useMutation({

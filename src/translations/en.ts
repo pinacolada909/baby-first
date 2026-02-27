@@ -208,6 +208,61 @@ export const en = {
   'dashboard.task.playtime': 'Playtime',
   'dashboard.task.other': 'Other',
 
+  // Dashboard - Family Status
+  'dashboard.familyStatus.title': 'Current Family Status',
+  'dashboard.familyStatus.babyStatus': 'Baby Status',
+  'dashboard.familyStatus.sleeping': 'Sleeping',
+  'dashboard.familyStatus.sleepDuration': 'Asleep:',
+  'dashboard.familyStatus.awake': 'Awake',
+  'dashboard.familyStatus.nextFeed': 'Next feed est:',
+  'dashboard.familyStatus.onDuty': 'On Duty:',
+  'dashboard.familyStatus.onShift': 'On shift:',
+  'dashboard.familyStatus.rest': 'Resting',
+  'dashboard.familyStatus.restDuration': 'Rest:',
+  'dashboard.familyStatus.momRecovery': 'Mom Recovery:',
+  'dashboard.familyStatus.protected': 'Protected',
+  'dashboard.familyStatus.atRisk': 'At Risk',
+  'dashboard.familyStatus.handoff': 'Handoff to',
+  'dashboard.familyStatus.extend': 'Extend 30min',
+  'dashboard.familyStatus.needSupport': 'I Need Support',
+  'dashboard.familyStatus.noShift': 'No shift active',
+  'dashboard.familyStatus.handoffSuccess': 'Shift handed off successfully',
+  'dashboard.familyStatus.extendSuccess': 'Shift extended by 30 minutes',
+  'dashboard.familyStatus.supportSent': 'Support request sent to caregivers',
+  'dashboard.familyStatus.notifications': 'Notifications',
+  'dashboard.familyStatus.noCaregivers': 'No caregivers added yet',
+  'dashboard.familyStatus.noCaregivers.hint': 'Add caregivers in Settings to enable shift coordination',
+
+  // Dashboard - Care Workload
+  'dashboard.workload.12h': 'Past 12h Care Workload',
+  'dashboard.workload.standingAlert': 'Continuous standing time',
+  'dashboard.workload.restOk': 'Rest: Sufficient',
+  'dashboard.workload.restLow': 'Rest: Insufficient',
+  'dashboard.workload.recommend': 'Recommend: Rest',
+  'dashboard.workload.min': 'min',
+  'dashboard.workload.hours': 'hours',
+  'dashboard.workload.empty.hint': 'Schedule shifts to start tracking care workload',
+
+  // Dashboard - Mom Recovery
+  'dashboard.momRecovery.title': 'Mom Recovery Protection',
+  'dashboard.momRecovery.standingTime': 'Continuous standing time',
+  'dashboard.momRecovery.startTimer': 'Start Timer',
+  'dashboard.momRecovery.stopTimer': 'Stop Timer',
+  'dashboard.momRecovery.restRecommend': 'Recommend: Rest',
+  'dashboard.momRecovery.todayVisitor': 'Today\'s visitor',
+  'dashboard.momRecovery.noRecovering': 'No recovering caregiver set',
+  'dashboard.momRecovery.setInSettings': 'Set in baby profile settings',
+  'dashboard.momRecovery.noRecovering.hint': 'Go to Settings > Baby Profile to designate a recovering caregiver',
+
+  // Dashboard - Today's Tasks
+  'dashboard.todayTasks.title': 'Today\'s Operation Tasks',
+  'dashboard.todayTasks.empty': 'No activities logged today',
+  'dashboard.todayTasks.empty.hint': 'Activities will appear here as you log sleep, feedings, and diapers',
+
+  // Dashboard - Household Chores
+  'dashboard.chores.title': 'Household Chores',
+  'dashboard.chores.lowPriority': 'Low Priority',
+
   // Baby Profiles
   'baby.add': 'Add Baby',
   'baby.name': 'Baby Name',

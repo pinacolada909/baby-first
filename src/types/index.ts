@@ -31,6 +31,7 @@ export interface Baby {
   id: string
   name: string
   birth_date: string | null
+  recovering_caregiver_id: string | null
   created_at: string
 }
 
@@ -101,6 +102,15 @@ export interface TimeBlock {
   start_time: string
   end_time: string
   notes: string | null
+  created_at: string
+}
+
+export interface StandingSession {
+  id: string
+  baby_id: string
+  caregiver_id: string
+  start_time: string
+  end_time: string | null
   created_at: string
 }
 

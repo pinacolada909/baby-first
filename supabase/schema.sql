@@ -126,6 +126,21 @@ CREATE TABLE public.care_tasks (
 
 ALTER TABLE public.care_tasks ENABLE ROW LEVEL SECURITY;
 
+-- ---- standing_sessions ----
+CREATE TABLE public.standing_sessions (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  baby_id      UUID NOT NULL REFERENCES public.babies ON DELETE CASCADE,
+  caregiver_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  start_time   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  end_time     TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.standing_sessions ENABLE ROW LEVEL SECURITY;
+
+-- Add recovering caregiver setting to babies
+ALTER TABLE public.babies ADD COLUMN IF NOT EXISTS recovering_caregiver_id UUID REFERENCES auth.users(id);
+
 -- ============================================================
 -- 2. HELPER FUNCTIONS (tables exist now, safe to reference)
 -- ============================================================
@@ -599,3 +614,46 @@ CREATE INDEX idx_milestones_baby_id ON public.milestones (baby_id);
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.growth_records;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.milestones;
+
+-- ============================================================
+-- 11. STANDING SESSIONS (Mom Recovery)
+-- ============================================================
+
+CREATE POLICY "standing_sessions_select"
+  ON public.standing_sessions FOR SELECT
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()));
+
+CREATE POLICY "standing_sessions_insert"
+  ON public.standing_sessions FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
+CREATE POLICY "standing_sessions_update"
+  ON public.standing_sessions FOR UPDATE
+  TO authenticated
+  USING (caregiver_id = auth.uid())
+  WITH CHECK (caregiver_id = auth.uid());
+
+CREATE POLICY "standing_sessions_delete"
+  ON public.standing_sessions FOR DELETE
+  TO authenticated
+  USING (
+    public.is_primary_caregiver(baby_id, auth.uid())
+    OR caregiver_id = auth.uid()
+  );
+
+CREATE INDEX idx_standing_sessions_baby_id ON public.standing_sessions (baby_id);
+CREATE INDEX idx_standing_sessions_start_time ON public.standing_sessions (start_time);
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.standing_sessions;
+
+-- time_blocks update policy (for handoff/extend)
+CREATE POLICY "time_blocks_update"
+  ON public.time_blocks FOR UPDATE
+  TO authenticated
+  USING (public.is_baby_caregiver(baby_id, auth.uid()))
+  WITH CHECK (public.is_baby_caregiver(baby_id, auth.uid()));

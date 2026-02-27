@@ -210,6 +210,61 @@ export const zh: Record<TranslationKey, string> = {
   'dashboard.task.playtime': '玩耍',
   'dashboard.task.other': '其他',
 
+  // Dashboard - Family Status
+  'dashboard.familyStatus.title': '当前家庭状态',
+  'dashboard.familyStatus.babyStatus': '宝宝状态',
+  'dashboard.familyStatus.sleeping': '睡眠中',
+  'dashboard.familyStatus.sleepDuration': '已睡:',
+  'dashboard.familyStatus.awake': '清醒',
+  'dashboard.familyStatus.nextFeed': '下次喂奶预计:',
+  'dashboard.familyStatus.onDuty': '当前值班:',
+  'dashboard.familyStatus.onShift': '已值班:',
+  'dashboard.familyStatus.rest': '休息中',
+  'dashboard.familyStatus.restDuration': '连续息息:',
+  'dashboard.familyStatus.momRecovery': '妈妈恢复:',
+  'dashboard.familyStatus.protected': '受保护',
+  'dashboard.familyStatus.atRisk': '需注意',
+  'dashboard.familyStatus.handoff': '交接给',
+  'dashboard.familyStatus.extend': '延长30分钟',
+  'dashboard.familyStatus.needSupport': '我需要支援',
+  'dashboard.familyStatus.noShift': '当前无值班',
+  'dashboard.familyStatus.handoffSuccess': '交接成功',
+  'dashboard.familyStatus.extendSuccess': '值班延长30分钟',
+  'dashboard.familyStatus.supportSent': '支援请求已发送',
+  'dashboard.familyStatus.notifications': '消息',
+  'dashboard.familyStatus.noCaregivers': '尚未添加照护者',
+  'dashboard.familyStatus.noCaregivers.hint': '在设置中添加照护者以启用值班协调',
+
+  // Dashboard - Care Workload
+  'dashboard.workload.12h': '过去12小时照护负荷',
+  'dashboard.workload.standingAlert': '连续站立时间',
+  'dashboard.workload.restOk': '休息充足',
+  'dashboard.workload.restLow': '休息不足',
+  'dashboard.workload.recommend': '建议：休息',
+  'dashboard.workload.min': '分钟',
+  'dashboard.workload.hours': '小时',
+  'dashboard.workload.empty.hint': '安排值班以开始追踪照护负荷',
+
+  // Dashboard - Mom Recovery
+  'dashboard.momRecovery.title': '妈妈恢复保护系统',
+  'dashboard.momRecovery.standingTime': '连续站立时间',
+  'dashboard.momRecovery.startTimer': '开始计时',
+  'dashboard.momRecovery.stopTimer': '停止计时',
+  'dashboard.momRecovery.restRecommend': '建议：休息',
+  'dashboard.momRecovery.todayVisitor': '今日来访',
+  'dashboard.momRecovery.noRecovering': '未设置恢复中的照护者',
+  'dashboard.momRecovery.setInSettings': '在宝宝设置中配置',
+  'dashboard.momRecovery.noRecovering.hint': '前往设置 > 宝宝档案，指定一位恢复中的照护者',
+
+  // Dashboard - Today's Tasks
+  'dashboard.todayTasks.title': '今日操作任务',
+  'dashboard.todayTasks.empty': '今日尚无活动记录',
+  'dashboard.todayTasks.empty.hint': '记录睡眠、喂养和换尿布后，活动会显示在这里',
+
+  // Dashboard - Household Chores
+  'dashboard.chores.title': '家务',
+  'dashboard.chores.lowPriority': '低优先级',
+
   // Baby Profiles
   'baby.add': '添加宝宝',
   'baby.name': '宝宝名字',

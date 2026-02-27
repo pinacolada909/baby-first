@@ -28,6 +28,9 @@ export const queryKeys = {
   careTasks: {
     byBaby: (babyId: string) => ['careTasks', babyId] as const,
   },
+  standingSessions: {
+    byBaby: (babyId: string) => ['standingSessions', babyId] as const,
+  },
   growth: {
     byBaby: (babyId: string) => ['growth', babyId] as const,
   },
