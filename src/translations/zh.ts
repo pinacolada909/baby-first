@@ -231,6 +231,8 @@ export const zh: Record<TranslationKey, string> = {
   'dashboard.familyStatus.handoffSuccess': '交接成功',
   'dashboard.familyStatus.extendSuccess': '值班延长30分钟',
   'dashboard.familyStatus.supportSent': '支援请求已发送',
+  'dashboard.familyStatus.startShift': '开始值班:',
+  'dashboard.familyStatus.startShiftSuccess': '值班已开始',
   'dashboard.familyStatus.notifications': '消息',
   'dashboard.familyStatus.noCaregivers': '尚未添加照护者',
   'dashboard.familyStatus.noCaregivers.hint': '在设置中添加照护者以启用值班协调',

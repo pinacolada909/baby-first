@@ -340,7 +340,6 @@ CREATE POLICY "time_blocks_insert"
   TO authenticated
   WITH CHECK (
     public.is_baby_caregiver(baby_id, auth.uid())
-    AND caregiver_id = auth.uid()
   );
 
 CREATE POLICY "time_blocks_delete"

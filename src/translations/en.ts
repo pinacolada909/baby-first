@@ -229,6 +229,8 @@ export const en = {
   'dashboard.familyStatus.handoffSuccess': 'Shift handed off successfully',
   'dashboard.familyStatus.extendSuccess': 'Shift extended by 30 minutes',
   'dashboard.familyStatus.supportSent': 'Support request sent to caregivers',
+  'dashboard.familyStatus.startShift': 'Start:',
+  'dashboard.familyStatus.startShiftSuccess': 'Shift started',
   'dashboard.familyStatus.notifications': 'Notifications',
   'dashboard.familyStatus.noCaregivers': 'No caregivers added yet',
   'dashboard.familyStatus.noCaregivers.hint': 'Add caregivers in Settings to enable shift coordination',

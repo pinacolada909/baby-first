@@ -7,7 +7,7 @@ import { useTimeBlocks, useAddTimeBlock, useUpdateTimeBlock } from '@/hooks/useT
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Baby, Shield, Lock, ChevronRight, AlertTriangle, Users, Loader2 } from 'lucide-react'
+import { Baby, Shield, Lock, ChevronRight, AlertTriangle, Users, Loader2, Play } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TimeBlock, BabyCaregiver } from '@/types'
 
@@ -40,7 +40,7 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const updateBlock = useUpdateTimeBlock()
 
   const now = Date.now()
-  const isHandingOff = addBlock.isPending || updateBlock.isPending
+  const isBusy = addBlock.isPending || updateBlock.isPending
 
   // Baby sleeping status
   const sleepInfo = useMemo(() => {
@@ -114,11 +114,32 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
     return { isProtected: totalRestHours >= 2, totalRestHours }
   }, [recoveringId, timeBlocks, now])
 
-  // Handoff targets
-  const handoffTargets = caregivers.filter(
-    (c: BabyCaregiver) => !currentShift || c.user_id !== currentShift.caregiver_id,
-  )
+  // Button targets: when shift active, show other caregivers; when no shift, show all caregivers
+  const buttonTargets = currentShift
+    ? caregivers.filter((c: BabyCaregiver) => c.user_id !== currentShift.caregiver_id)
+    : caregivers
 
+  // Start a new 2-hour shift for a caregiver (when no shift is active)
+  const handleStartShift = async (targetId: string) => {
+    if (isDemo || !babyId) return
+    try {
+      const startTime = new Date()
+      const endTime = new Date(startTime.getTime() + 2 * 3600000) // 2 hours
+      await addBlock.mutateAsync({
+        baby_id: babyId,
+        caregiver_id: targetId,
+        block_type: 'care',
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        notes: null,
+      })
+      toast.success(t('dashboard.familyStatus.startShiftSuccess'))
+    } catch {
+      toast.error(t('common.error'))
+    }
+  }
+
+  // Hand off active shift to another caregiver
   const handleHandoff = async (targetId: string) => {
     if (isDemo || !babyId || !currentShift) return
     try {
@@ -158,10 +179,6 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
     } catch {
       toast.error(t('common.error'))
     }
-  }
-
-  const handleNeedSupport = () => {
-    toast.info(t('dashboard.familyStatus.supportSent'))
   }
 
   return (
@@ -270,46 +287,62 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
               </div>
             </div>
 
-            {/* Action buttons — stack on mobile */}
+            {/* Action buttons — dual mode */}
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-              {handoffTargets.map((c: BabyCaregiver) => (
-                <Button
-                  key={c.user_id}
-                  size="sm"
-                  className="rounded-full bg-[#a78bfa] text-white hover:bg-[#8b5cf6] min-h-[44px] transition-all"
-                  onClick={() => handleHandoff(c.user_id)}
-                  disabled={!currentShift || isDemo || isHandingOff}
-                >
-                  {isHandingOff ? (
-                    <Loader2 className="size-4 animate-spin mr-1" />
-                  ) : (
-                    <ChevronRight className="size-4 mr-1" />
-                  )}
-                  {t('dashboard.familyStatus.handoff')} {c.display_name}
-                  <ChevronRight className="size-4 ml-1" />
-                </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full min-h-[44px] transition-all"
-                onClick={handleExtend}
-                disabled={!currentShift || isDemo || updateBlock.isPending}
-              >
-                {updateBlock.isPending && (
-                  <Loader2 className="size-4 animate-spin mr-1" />
-                )}
-                {t('dashboard.familyStatus.extend')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full min-h-[44px] transition-all"
-                onClick={handleNeedSupport}
-                disabled={isDemo}
-              >
-                {t('dashboard.familyStatus.needSupport')}
-              </Button>
+              {currentShift ? (
+                <>
+                  {/* Shift active → Handoff + Extend */}
+                  {buttonTargets.map((c: BabyCaregiver) => (
+                    <Button
+                      key={c.user_id}
+                      size="sm"
+                      className="rounded-full bg-[#a78bfa] text-white hover:bg-[#8b5cf6] min-h-[44px] transition-all"
+                      onClick={() => handleHandoff(c.user_id)}
+                      disabled={isDemo || isBusy}
+                    >
+                      {isBusy ? (
+                        <Loader2 className="size-4 animate-spin mr-1" />
+                      ) : (
+                        <ChevronRight className="size-4 mr-1" />
+                      )}
+                      {t('dashboard.familyStatus.handoff')} {c.display_name}
+                      <ChevronRight className="size-4 ml-1" />
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full min-h-[44px] transition-all"
+                    onClick={handleExtend}
+                    disabled={isDemo || updateBlock.isPending}
+                  >
+                    {updateBlock.isPending && (
+                      <Loader2 className="size-4 animate-spin mr-1" />
+                    )}
+                    {t('dashboard.familyStatus.extend')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {/* No shift → Start shift for any caregiver */}
+                  {buttonTargets.map((c: BabyCaregiver) => (
+                    <Button
+                      key={c.user_id}
+                      size="sm"
+                      className="rounded-full bg-[#a78bfa] text-white hover:bg-[#8b5cf6] min-h-[44px] transition-all"
+                      onClick={() => handleStartShift(c.user_id)}
+                      disabled={isDemo || isBusy}
+                    >
+                      {isBusy ? (
+                        <Loader2 className="size-4 animate-spin mr-1" />
+                      ) : (
+                        <Play className="size-4 mr-1" />
+                      )}
+                      {t('dashboard.familyStatus.startShift')} {c.display_name}
+                    </Button>
+                  ))}
+                </>
+              )}
             </div>
           </>
         )}
