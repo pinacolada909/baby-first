@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
 import { useSleepSessions } from '@/hooks/useSleepSessions'
 import { useFeedings } from '@/hooks/useFeedings'
@@ -31,7 +30,6 @@ interface FamilyStatusCardProps {
 
 export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const { t } = useLanguage()
-  const { user } = useAuth()
   const { selectedBaby } = useBaby()
 
   const { data: sleepSessions = [] } = useSleepSessions(babyId)

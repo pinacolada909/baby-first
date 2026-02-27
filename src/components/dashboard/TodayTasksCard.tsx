@@ -41,7 +41,7 @@ interface TodayTasksCardProps {
   isDemo: boolean
 }
 
-export function TodayTasksCard({ babyId, isDemo }: TodayTasksCardProps) {
+export function TodayTasksCard({ babyId }: TodayTasksCardProps) {
   const { t } = useLanguage()
   const [expanded, setExpanded] = useState(true)
 
@@ -64,7 +64,7 @@ export function TodayTasksCard({ babyId, isDemo }: TodayTasksCardProps) {
           time: formatTime(s.start_time),
           timestamp: new Date(s.start_time).getTime(),
           caregiver: getName(s.caregiver_id),
-          action: t('nav.sleepTracker'),
+          action: t('nav.sleep'),
           type: 'sleep',
         })
       })
@@ -90,7 +90,7 @@ export function TodayTasksCard({ babyId, isDemo }: TodayTasksCardProps) {
           time: formatTime(d.changed_at),
           timestamp: new Date(d.changed_at).getTime(),
           caregiver: getName(d.caregiver_id),
-          action: `${t('nav.diaperTracker')} (${d.status})`,
+          action: `${t('nav.diaper')} (${d.status})`,
           type: 'diaper',
         })
       })

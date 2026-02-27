@@ -15,7 +15,7 @@ interface CareWorkloadCardProps {
   isDemo: boolean
 }
 
-export function CareWorkloadCard({ babyId, isDemo }: CareWorkloadCardProps) {
+export function CareWorkloadCard({ babyId }: CareWorkloadCardProps) {
   const { t } = useLanguage()
   const { data: timeBlocks = [] } = useTimeBlocks(babyId)
   const { data: caregivers = [] } = useCaregivers(babyId)
@@ -83,7 +83,7 @@ export function CareWorkloadCard({ babyId, isDemo }: CareWorkloadCardProps) {
               <XAxis type="number" unit="h" tick={{ fontSize: 12 }} />
               <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
               <Tooltip
-                formatter={(value: number) => [`${value} ${t('dashboard.workload.hours')}`, '']}
+                formatter={(value: number | string) => [`${value} ${t('dashboard.workload.hours')}`, '']}
               />
               <Bar
                 dataKey="hours"

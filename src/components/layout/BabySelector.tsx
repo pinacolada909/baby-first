@@ -54,7 +54,7 @@ export function BabySelector() {
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.babies.all(user.id) })
       // Set the newly created baby as selected
-      setSelectedBaby({ id: babyId, name: babyName.trim(), birth_date: birthDate || null, created_at: new Date().toISOString() })
+      setSelectedBaby({ id: babyId, name: babyName.trim(), birth_date: birthDate || null, recovering_caregiver_id: null, created_at: new Date().toISOString() })
       toast.success(t('baby.created'))
       setDialogOpen(false)
       setBabyName('')
