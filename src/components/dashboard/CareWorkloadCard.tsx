@@ -83,7 +83,7 @@ export function CareWorkloadCard({ babyId }: CareWorkloadCardProps) {
               <XAxis type="number" unit="h" tick={{ fontSize: 12 }} />
               <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
               <Tooltip
-                formatter={(value: number | string) => [`${value} ${t('dashboard.workload.hours')}`, '']}
+                formatter={(value: number | string | undefined) => [`${value ?? 0} ${t('dashboard.workload.hours')}`, '']}
               />
               <Bar
                 dataKey="hours"
