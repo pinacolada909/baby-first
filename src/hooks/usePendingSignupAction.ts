@@ -32,12 +32,14 @@ function getPendingSignupAction(): PendingAction | null {
     const obj = parsed as Record<string, unknown>
     if (obj.type === 'create_baby') {
       if (typeof obj.babyName !== 'string' || typeof obj.displayName !== 'string') return null
-      if (obj.babyName.length > 100 || obj.displayName.length > 50) return null
+      if (obj.babyName.trim().length === 0 || obj.babyName.length > 100) return null
+      if (obj.displayName.trim().length === 0 || obj.displayName.length > 50) return null
       return { type: 'create_baby', babyName: obj.babyName, displayName: obj.displayName }
     }
     if (obj.type === 'redeem_invite') {
       if (typeof obj.code !== 'string' || typeof obj.displayName !== 'string') return null
-      if (obj.code.length > 6 || obj.displayName.length > 50) return null
+      if (obj.code.trim().length === 0 || obj.code.length > 6) return null
+      if (obj.displayName.trim().length === 0 || obj.displayName.length > 50) return null
       return { type: 'redeem_invite', code: obj.code, displayName: obj.displayName }
     }
     return null

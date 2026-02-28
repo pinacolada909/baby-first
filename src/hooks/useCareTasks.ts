@@ -40,7 +40,7 @@ export function useAddCareTask() {
 export function useToggleTask() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, completed }: { id: string; babyId: string; completed: boolean }) => {
+    mutationFn: async ({ id, babyId, completed }: { id: string; babyId: string; completed: boolean }) => {
       const { data, error } = await supabase
         .from('care_tasks')
         .update({
@@ -48,6 +48,7 @@ export function useToggleTask() {
           completed_at: completed ? new Date().toISOString() : null,
         })
         .eq('id', id)
+        .eq('baby_id', babyId)
         .select()
         .single()
       if (error) throw error
@@ -63,7 +64,7 @@ export function useDeleteCareTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, babyId }: { id: string; babyId: string }) => {
-      const { error } = await supabase.from('care_tasks').delete().eq('id', id)
+      const { error } = await supabase.from('care_tasks').delete().eq('id', id).eq('baby_id', babyId)
       if (error) throw error
       return { babyId }
     },

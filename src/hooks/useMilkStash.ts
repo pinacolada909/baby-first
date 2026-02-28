@@ -40,7 +40,7 @@ export function useDeleteMilkStash() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, babyId }: { id: string; babyId: string }) => {
-      const { error } = await supabase.from('milk_stash').delete().eq('id', id)
+      const { error } = await supabase.from('milk_stash').delete().eq('id', id).eq('baby_id', babyId)
       if (error) throw error
       return { babyId }
     },

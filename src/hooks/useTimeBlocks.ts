@@ -45,6 +45,7 @@ export function useUpdateTimeBlock() {
         .from('time_blocks')
         .update(updates)
         .eq('id', id)
+        .eq('baby_id', babyId)
         .select()
         .single()
       if (error) throw error
@@ -60,7 +61,7 @@ export function useDeleteTimeBlock() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, babyId }: { id: string; babyId: string }) => {
-      const { error } = await supabase.from('time_blocks').delete().eq('id', id)
+      const { error } = await supabase.from('time_blocks').delete().eq('id', id).eq('baby_id', babyId)
       if (error) throw error
       return { babyId }
     },

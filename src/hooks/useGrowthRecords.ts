@@ -41,7 +41,7 @@ export function useDeleteGrowthRecord() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, babyId }: { id: string; babyId: string }) => {
-      const { error } = await supabase.from('growth_records').delete().eq('id', id)
+      const { error } = await supabase.from('growth_records').delete().eq('id', id).eq('baby_id', babyId)
       if (error) throw error
       return { babyId }
     },

@@ -205,9 +205,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
-    console.error('parse-voice-input error:', error)
+    console.error('parse-voice-input error:', error instanceof Error ? error.message : String(error))
     return new Response(
-      JSON.stringify({ success: false, error: error.message || 'Failed to parse voice input' }),
+      JSON.stringify({ success: false, error: 'Failed to parse voice input' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }

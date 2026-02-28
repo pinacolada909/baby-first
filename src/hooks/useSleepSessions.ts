@@ -41,7 +41,7 @@ export function useDeleteSleep() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, babyId }: { id: string; babyId: string }) => {
-      const { error } = await supabase.from('sleep_sessions').delete().eq('id', id)
+      const { error } = await supabase.from('sleep_sessions').delete().eq('id', id).eq('baby_id', babyId)
       if (error) throw error
       return { babyId }
     },
