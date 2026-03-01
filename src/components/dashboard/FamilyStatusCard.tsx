@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { useBaby } from '@/contexts/BabyContext'
+
 import { useSleepSessions } from '@/hooks/useSleepSessions'
 import { useFeedings } from '@/hooks/useFeedings'
 import { useTimeBlocks, useAddTimeBlock, useUpdateTimeBlock, useDeleteTimeBlock } from '@/hooks/useTimeBlocks'
@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
-  Baby, Shield, Lock, ChevronRight, ChevronDown, AlertTriangle,
+  Baby, Lock, ChevronRight, ChevronDown,
   Users, Loader2, Play, Clock, Plus, Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -40,7 +40,7 @@ interface FamilyStatusCardProps {
 export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
   const { t } = useLanguage()
   const { user } = useAuth()
-  const { selectedBaby } = useBaby()
+
   const [historyOpen, setHistoryOpen] = useState(true)
   const [showLogForm, setShowLogForm] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -123,22 +123,6 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
         return { ...c, isResting: !!restBlock, restDuration }
       })
   }, [caregivers, timeBlocks, currentShift, now])
-
-  // Mom recovery status
-  const recoveringId = selectedBaby?.recovering_caregiver_id
-  const recoveringName = recoveringId ? caregiverName(recoveringId) : null
-  const momRecoveryStatus = useMemo(() => {
-    if (!recoveringId) return null
-    const restBlocks = timeBlocks.filter(
-      (b: TimeBlock) => b.caregiver_id === recoveringId && b.block_type === 'rest' && isToday(b.start_time),
-    )
-    const totalRestMs = restBlocks.reduce((sum: number, b: TimeBlock) => {
-      const end = b.end_time ? new Date(b.end_time).getTime() : now
-      return sum + (end - new Date(b.start_time).getTime())
-    }, 0)
-    const totalRestHours = totalRestMs / 3600000
-    return { isProtected: totalRestHours >= 2, totalRestHours }
-  }, [recoveringId, timeBlocks, now])
 
   // Today's shifts (for history log) — both care and rest, excluding current active shift
   const todayShifts = useMemo(() => {
@@ -356,23 +340,6 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
                     {restingCaregivers[0].display_name}
                   </span>
                 ) : null}
-                {momRecoveryStatus && recoveringName && (
-                  <div className="flex items-center gap-1 text-xs flex-wrap">
-                    <span className="font-medium text-purple-700">{recoveringName}</span>
-                    <span className="text-purple-600">{t('dashboard.familyStatus.momRecovery')}</span>
-                    {momRecoveryStatus.isProtected ? (
-                      <span className="flex items-center gap-0.5 text-green-600">
-                        <Shield className="size-3" />
-                        {t('dashboard.familyStatus.protected')}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-0.5 text-amber-600">
-                        <AlertTriangle className="size-3" />
-                        {t('dashboard.familyStatus.atRisk')}
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 

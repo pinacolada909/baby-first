@@ -4,7 +4,7 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
 import { FamilyStatusCard } from '@/components/dashboard/FamilyStatusCard'
 import { CareWorkloadCard } from '@/components/dashboard/CareWorkloadCard'
-import { MomRecoveryCard } from '@/components/dashboard/MomRecoveryCard'
+
 import { TodayTasksCard } from '@/components/dashboard/TodayTasksCard'
 import { HouseholdChoresCard } from '@/components/dashboard/HouseholdChoresCard'
 
@@ -26,9 +26,6 @@ export function ActivityDashboardPage() {
         <CareWorkloadCard babyId={babyId} isDemo={isDemo} />
       </div>
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150 fill-mode-both">
-        <MomRecoveryCard babyId={babyId} isDemo={isDemo} />
-      </div>
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 delay-200 fill-mode-both">
         <TodayTasksCard babyId={babyId} isDemo={isDemo} />
       </div>
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 delay-300 fill-mode-both">
