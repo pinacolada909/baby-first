@@ -240,7 +240,7 @@ export default function PumpingTrackerPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl space-y-6 px-4 py-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">{t('pumping.title')}</h1>
