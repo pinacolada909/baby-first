@@ -277,6 +277,18 @@ CREATE POLICY "sleep_sessions_insert"
     AND caregiver_id = auth.uid()
   );
 
+CREATE POLICY "sleep_sessions_update"
+  ON public.sleep_sessions FOR UPDATE
+  TO authenticated
+  USING (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  )
+  WITH CHECK (
+    public.is_baby_caregiver(baby_id, auth.uid())
+    AND caregiver_id = auth.uid()
+  );
+
 CREATE POLICY "sleep_sessions_delete"
   ON public.sleep_sessions FOR DELETE
   TO authenticated

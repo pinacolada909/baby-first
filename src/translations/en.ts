@@ -130,6 +130,8 @@ export const en = {
   'sleep.overlap': 'This time overlaps with an existing sleep session.',
   'sleep.stillSleeping': 'Still sleeping',
   'sleep.startSleep': 'Start Sleep',
+  'sleep.modeFellAsleep': 'Baby Fell Asleep',
+  'sleep.modeLogPast': 'Log Past Sleep',
   'sleep.wakeUp': 'Wake Up',
   'sleep.sleeping': 'Sleeping...',
   'sleep.alreadySleeping': 'Baby is already sleeping. End the current session first.',

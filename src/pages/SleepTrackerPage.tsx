@@ -76,13 +76,26 @@ export function SleepTrackerPage() {
   }, [activeSleep])
 
   // Form state
+  const [sleepMode, setSleepMode] = useState<'asleep' | 'log'>('asleep')
   const currentTime = new Date()
   const oneHourAgo = new Date(currentTime.getTime() - 3600000)
-  const [startTime, setStartTime] = useState(formatDatetimeLocal(oneHourAgo))
+  const [startTime, setStartTime] = useState(formatDatetimeLocal(currentTime))
   const [endTime, setEndTime] = useState(formatDatetimeLocal(currentTime))
   const [notes, setNotes] = useState('')
-  const [stillSleeping, setStillSleeping] = useState(false)
+  const stillSleeping = sleepMode === 'asleep'
   const [period, setPeriod] = useState('week')
+
+  // Reset times when switching modes
+  const handleModeChange = (mode: string) => {
+    const now = new Date()
+    if (mode === 'asleep') {
+      setStartTime(formatDatetimeLocal(now))
+    } else {
+      setStartTime(formatDatetimeLocal(new Date(now.getTime() - 3600000)))
+      setEndTime(formatDatetimeLocal(now))
+    }
+    setSleepMode(mode as 'asleep' | 'log')
+  }
 
   const duration = useMemo(() => {
     if (stillSleeping) return 0
@@ -172,7 +185,6 @@ export function SleepTrackerPage() {
       await addMutation.mutateAsync(session)
     }
     setNotes('')
-    setStillSleeping(false)
     toast.success(stillSleeping ? t('sleep.started') : t('sleep.added'))
   }
 
@@ -268,61 +280,96 @@ export function SleepTrackerPage() {
       <Card>
         <CardContent className="space-y-4 p-6">
           <h2 className="text-lg font-semibold">{t('sleep.log')}</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <Label>{t('sleep.startTime')}</Label>
-              <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-            {!stillSleeping && (
+
+          {/* Mode toggle */}
+          <Tabs value={sleepMode} onValueChange={handleModeChange}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="asleep" className="gap-1.5">
+                <Moon className="size-3.5" />
+                {t('sleep.modeFellAsleep')}
+              </TabsTrigger>
+              <TabsTrigger value="log" className="gap-1.5">
+                <Lightbulb className="size-3.5" />
+                {t('sleep.modeLogPast')}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Baby Fell Asleep mode */}
+            <TabsContent value="asleep" className="space-y-4 mt-4">
               <div>
-                <Label>{t('sleep.endTime')}</Label>
-                <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                <Label>{t('sleep.startTime')}</Label>
+                <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
               </div>
-            )}
-          </div>
-          {/* Still sleeping toggle */}
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={stillSleeping}
-              onChange={(e) => setStillSleeping(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-            />
-            <span className="text-sm text-muted-foreground">{t('sleep.stillSleeping')}</span>
-          </label>
-          {!stillSleeping && (
-            <div>
-              <Label>{t('sleep.duration')}: <span className="font-bold">{duration.toFixed(1)} {t('sleep.hours')}</span></Label>
-            </div>
-          )}
-          <div>
-            <Label>{t('sleep.notes')}</Label>
-            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('sleep.notes')} />
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleAdd}
-              disabled={!stillSleeping && duration <= 0}
-            >
-              {stillSleeping ? t('sleep.startSleep') : t('sleep.add')}
-            </Button>
-            {!isDemo && (
-              <VoiceInputButton
-                trackerType="sleep"
-                onParsed={(data) => {
-                  const d = data as ParsedSleepData
-                  if (d.start_time) setStartTime(formatDatetimeLocal(new Date(d.start_time)))
-                  if (d.end_time) {
-                    setEndTime(formatDatetimeLocal(new Date(d.end_time)))
-                    setStillSleeping(false)
-                  } else if (d.start_time && !d.end_time) {
-                    setStillSleeping(true)
-                  }
-                  if (d.notes) setNotes(d.notes)
-                }}
-              />
-            )}
-          </div>
+              <div>
+                <Label>{t('sleep.notes')}</Label>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('sleep.notes')} />
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleAdd}
+                  className="w-full bg-violet-600 hover:bg-violet-700 text-white text-base py-5"
+                  disabled={!!activeSleep}
+                >
+                  <Moon className="size-4 mr-1.5" />
+                  {t('sleep.startSleep')}
+                </Button>
+              </div>
+              {!isDemo && (
+                <VoiceInputButton
+                  trackerType="sleep"
+                  onParsed={(data) => {
+                    const d = data as ParsedSleepData
+                    if (d.start_time) setStartTime(formatDatetimeLocal(new Date(d.start_time)))
+                    if (d.end_time) {
+                      setEndTime(formatDatetimeLocal(new Date(d.end_time)))
+                      handleModeChange('log')
+                    }
+                    if (d.notes) setNotes(d.notes)
+                  }}
+                />
+              )}
+            </TabsContent>
+
+            {/* Log Past Sleep mode */}
+            <TabsContent value="log" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label>{t('sleep.startTime')}</Label>
+                  <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                </div>
+                <div>
+                  <Label>{t('sleep.endTime')}</Label>
+                  <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <Label>{t('sleep.duration')}: <span className="font-bold">{duration.toFixed(1)} {t('sleep.hours')}</span></Label>
+              </div>
+              <div>
+                <Label>{t('sleep.notes')}</Label>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('sleep.notes')} />
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleAdd}
+                  disabled={duration <= 0}
+                >
+                  {t('sleep.add')}
+                </Button>
+                {!isDemo && (
+                  <VoiceInputButton
+                    trackerType="sleep"
+                    onParsed={(data) => {
+                      const d = data as ParsedSleepData
+                      if (d.start_time) setStartTime(formatDatetimeLocal(new Date(d.start_time)))
+                      if (d.end_time) setEndTime(formatDatetimeLocal(new Date(d.end_time)))
+                      if (d.notes) setNotes(d.notes)
+                    }}
+                  />
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

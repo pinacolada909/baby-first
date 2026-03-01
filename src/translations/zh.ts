@@ -132,6 +132,8 @@ export const zh: Record<TranslationKey, string> = {
   'sleep.overlap': '此时间段与已有的睡眠记录重叠。',
   'sleep.stillSleeping': '还在睡',
   'sleep.startSleep': '开始睡眠',
+  'sleep.modeFellAsleep': '宝宝睡着了',
+  'sleep.modeLogPast': '补记睡眠',
   'sleep.wakeUp': '醒了',
   'sleep.sleeping': '睡眠中...',
   'sleep.alreadySleeping': '宝宝正在睡觉，请先结束当前睡眠。',
