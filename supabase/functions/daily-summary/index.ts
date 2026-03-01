@@ -148,15 +148,22 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Get today's date range in PST
+    // Summary window: 8:00 PM PST/PDT yesterday to 7:59 PM PST/PDT today
+    // Using America/Los_Angeles handles DST automatically
     const now = new Date()
-    const pstOffset = -8 * 60 // PST is UTC-8
-    const pstNow = new Date(now.getTime() + (pstOffset + now.getTimezoneOffset()) * 60000)
-    const todayStart = new Date(pstNow.getFullYear(), pstNow.getMonth(), pstNow.getDate())
-    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000)
+    const pstNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
+    const pstDateStr = `${pstNow.getFullYear()}-${String(pstNow.getMonth() + 1).padStart(2, '0')}-${String(pstNow.getDate()).padStart(2, '0')}`
 
-    const todayStartISO = todayStart.toISOString()
-    const todayEndISO = todayEnd.toISOString()
+    // End: today at 8:00 PM Pacific (the cron fires around this time)
+    const todayEnd = new Date(`${pstDateStr}T20:00:00`)
+    // Compute the actual Pacific UTC offset for this date to convert to UTC
+    const pacificOffset = now.getTime() - pstNow.getTime()
+    const endUTC = new Date(todayEnd.getTime() + pacificOffset)
+    // Start: 24 hours before end
+    const startUTC = new Date(endUTC.getTime() - 24 * 60 * 60 * 1000)
+
+    const todayStartISO = startUTC.toISOString()
+    const todayEndISO = endUTC.toISOString()
 
     const results: { userId: string; success: boolean; error?: string }[] = []
 
