@@ -55,33 +55,37 @@ export function Navigation({ onOpenAuth }: NavigationProps) {
     <nav className="fixed top-0 right-0 left-0 z-50 border-b border-slate-100 bg-[#fdfcf8]/80 backdrop-blur-md">
       <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         {/* Left: App name */}
-        <NavLink to="/" className="text-lg font-bold tracking-tight text-[#a78bfa]">
+        <NavLink to="/" className="shrink-0 text-lg font-bold tracking-tight text-[#a78bfa]">
           BabyOS
         </NavLink>
 
         {/* Center: Nav links */}
-        <div className="flex items-center gap-1">
-          {navLinks.map(({ to, labelKey, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-violet-100 text-[#a78bfa]'
-                    : 'text-slate-500 hover:text-[#a78bfa] hover:bg-slate-50'
-                }`
-              }
-            >
-              <Icon className="size-4" />
-              <span className="hidden md:inline">{t(labelKey)}</span>
-            </NavLink>
-          ))}
+        <div className="relative min-w-0">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-4 bg-gradient-to-r from-[#fdfcf8] to-transparent md:hidden" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-4 bg-gradient-to-l from-[#fdfcf8] to-transparent md:hidden" />
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+            {navLinks.map(({ to, labelKey, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  `flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-violet-100 text-[#a78bfa]'
+                      : 'text-slate-500 hover:text-[#a78bfa] hover:bg-slate-50'
+                  }`
+                }
+              >
+                <Icon className="size-4" />
+                <span className="hidden md:inline">{t(labelKey)}</span>
+              </NavLink>
+            ))}
+          </div>
         </div>
 
         {/* Right: BabySelector, LanguageSelector, Auth */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {!isDemo && <BabySelector />}
           <LanguageSelector />
 
