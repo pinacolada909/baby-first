@@ -78,7 +78,6 @@ export function SleepTrackerPage() {
   // Form state
   const [sleepMode, setSleepMode] = useState<'asleep' | 'log'>('asleep')
   const currentTime = new Date()
-  const oneHourAgo = new Date(currentTime.getTime() - 3600000)
   const [startTime, setStartTime] = useState(formatDatetimeLocal(currentTime))
   const [endTime, setEndTime] = useState(formatDatetimeLocal(currentTime))
   const [notes, setNotes] = useState('')
