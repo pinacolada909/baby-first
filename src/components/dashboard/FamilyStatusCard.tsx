@@ -126,6 +126,7 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
 
   // Mom recovery status
   const recoveringId = selectedBaby?.recovering_caregiver_id
+  const recoveringName = recoveringId ? caregiverName(recoveringId) : null
   const momRecoveryStatus = useMemo(() => {
     if (!recoveringId) return null
     const restBlocks = timeBlocks.filter(
@@ -355,8 +356,9 @@ export function FamilyStatusCard({ babyId, isDemo }: FamilyStatusCardProps) {
                     {restingCaregivers[0].display_name}
                   </span>
                 ) : null}
-                {momRecoveryStatus && (
-                  <div className="flex items-center gap-1 text-xs">
+                {momRecoveryStatus && recoveringName && (
+                  <div className="flex items-center gap-1 text-xs flex-wrap">
+                    <span className="font-medium text-purple-700">{recoveringName}</span>
                     <span className="text-purple-600">{t('dashboard.familyStatus.momRecovery')}</span>
                     {momRecoveryStatus.isProtected ? (
                       <span className="flex items-center gap-0.5 text-green-600">
