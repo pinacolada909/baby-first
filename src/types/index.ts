@@ -66,8 +66,8 @@ export interface SleepSession {
   baby_id: string
   caregiver_id: string
   start_time: string
-  end_time: string
-  duration_hours: number
+  end_time: string | null
+  duration_hours: number | null
   notes: string | null
   created_at: string
 }

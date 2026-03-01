@@ -37,6 +37,26 @@ export function useAddSleep() {
   })
 }
 
+export function useUpdateSleep() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, babyId, updates }: { id: string; babyId: string; updates: Partial<Pick<SleepSession, 'end_time' | 'duration_hours'>> }) => {
+      const { data, error } = await supabase
+        .from('sleep_sessions')
+        .update(updates)
+        .eq('id', id)
+        .eq('baby_id', babyId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sleep.byBaby(data.baby_id) })
+    },
+  })
+}
+
 export function useDeleteSleep() {
   const queryClient = useQueryClient()
   return useMutation({

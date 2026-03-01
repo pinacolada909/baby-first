@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBaby } from '@/contexts/BabyContext'
-import { useSleepSessions, useAddSleep, useDeleteSleep } from '@/hooks/useSleepSessions'
+import { useSleepSessions, useAddSleep, useUpdateSleep, useDeleteSleep } from '@/hooks/useSleepSessions'
 import { useCaregivers } from '@/hooks/useCaregivers'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { queryKeys } from '@/lib/query-keys'
@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Moon, Trash2, Lightbulb } from 'lucide-react'
+import { Moon, Trash2, Lightbulb, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
@@ -28,6 +28,14 @@ function isToday(dateStr: string): boolean {
   return d.toDateString() === now.toDateString()
 }
 
+function formatElapsed(ms: number): string {
+  const totalMin = Math.floor(ms / 60000)
+  if (totalMin < 60) return `${totalMin}m`
+  const h = Math.floor(totalMin / 60)
+  const m = totalMin % 60
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
 export function SleepTrackerPage() {
   const { t } = useLanguage()
   const { user, isDemo } = useAuth()
@@ -38,6 +46,7 @@ export function SleepTrackerPage() {
   const { data: dbSessions = [] } = useSleepSessions(babyId)
   const { data: caregivers = [] } = useCaregivers(babyId)
   const addMutation = useAddSleep()
+  const updateMutation = useUpdateSleep()
   const deleteMutation = useDeleteSleep()
   useRealtimeSync('sleep_sessions', babyId, queryKeys.sleep.byBaby(babyId ?? ''))
 
@@ -52,26 +61,42 @@ export function SleepTrackerPage() {
 
   const sessions = isDemo ? demoSessions : dbSessions
 
+  // Active (ongoing) sleep session — end_time is null
+  const activeSleep = useMemo(
+    () => sessions.find((s) => s.end_time === null) ?? null,
+    [sessions],
+  )
+
+  // Live timer for active sleep
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (!activeSleep) return
+    const id = setInterval(() => setNow(Date.now()), 15000) // update every 15s
+    return () => clearInterval(id)
+  }, [activeSleep])
+
   // Form state
-  const now = new Date()
-  const oneHourAgo = new Date(now.getTime() - 3600000)
+  const currentTime = new Date()
+  const oneHourAgo = new Date(currentTime.getTime() - 3600000)
   const [startTime, setStartTime] = useState(formatDatetimeLocal(oneHourAgo))
-  const [endTime, setEndTime] = useState(formatDatetimeLocal(now))
+  const [endTime, setEndTime] = useState(formatDatetimeLocal(currentTime))
   const [notes, setNotes] = useState('')
+  const [stillSleeping, setStillSleeping] = useState(false)
   const [period, setPeriod] = useState('week')
 
   const duration = useMemo(() => {
+    if (stillSleeping) return 0
     const start = new Date(startTime)
     const end = new Date(endTime)
     let diff = (end.getTime() - start.getTime()) / 3600000
     if (diff < 0) diff += 24
     return Math.round(diff * 100) / 100
-  }, [startTime, endTime])
+  }, [startTime, endTime, stillSleeping])
 
   const todayTotal = useMemo(() => {
     return sessions
       .filter((s) => isToday(s.start_time))
-      .reduce((sum, s) => sum + s.duration_hours, 0)
+      .reduce((sum, s) => sum + (s.duration_hours ?? 0), 0)
   }, [sessions])
 
   const chartData = useMemo(() => {
@@ -83,7 +108,6 @@ export function SleepTrackerPage() {
       days = 30
     }
 
-    // Create buckets for each day
     const buckets: Record<string, { label: string; hours: number; date: Date }> = {}
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 86400000)
@@ -91,43 +115,51 @@ export function SleepTrackerPage() {
       buckets[label] = { label, hours: 0, date }
     }
 
-    // Sum sleep hours per day
     sessions.forEach((s) => {
       const d = new Date(s.start_time)
       const label = `${d.getMonth() + 1}/${d.getDate()}`
       if (buckets[label]) {
-        buckets[label].hours += s.duration_hours
+        buckets[label].hours += s.duration_hours ?? 0
       }
     })
 
-    // Sort by date and return
     return Object.values(buckets)
       .sort((a, b) => a.date.getTime() - b.date.getTime())
       .map(({ label, hours }) => ({ label, hours: Math.round(hours * 10) / 10 }))
   }, [sessions, period])
 
   const handleAdd = async () => {
-    const newStart = new Date(startTime).getTime()
-    const newEnd = new Date(endTime).getTime()
-
-    // Check for time overlap with existing sessions
-    const overlap = sessions.find((s) => {
-      const existStart = new Date(s.start_time).getTime()
-      const existEnd = new Date(s.end_time).getTime()
-      return newStart < existEnd && newEnd > existStart
-    })
-
-    if (overlap) {
-      toast.error(t('sleep.overlap'))
+    // Prevent starting a new sleep if one is already ongoing
+    if (stillSleeping && activeSleep) {
+      toast.error(t('sleep.alreadySleeping'))
       return
+    }
+
+    const newStart = new Date(startTime).getTime()
+
+    if (!stillSleeping) {
+      const newEnd = new Date(endTime).getTime()
+
+      // Check for time overlap with existing completed sessions
+      const overlap = sessions.find((s) => {
+        if (!s.end_time) return false
+        const existStart = new Date(s.start_time).getTime()
+        const existEnd = new Date(s.end_time).getTime()
+        return newStart < existEnd && newEnd > existStart
+      })
+
+      if (overlap) {
+        toast.error(t('sleep.overlap'))
+        return
+      }
     }
 
     const session = {
       baby_id: babyId ?? 'demo',
       caregiver_id: user?.id ?? 'demo',
       start_time: new Date(startTime).toISOString(),
-      end_time: new Date(endTime).toISOString(),
-      duration_hours: duration,
+      end_time: stillSleeping ? null : new Date(endTime).toISOString(),
+      duration_hours: stillSleeping ? null : duration,
       notes: notes || null,
     }
 
@@ -140,7 +172,36 @@ export function SleepTrackerPage() {
       await addMutation.mutateAsync(session)
     }
     setNotes('')
-    toast.success(t('sleep.added'))
+    setStillSleeping(false)
+    toast.success(stillSleeping ? t('sleep.started') : t('sleep.added'))
+  }
+
+  const handleWakeUp = async (session: SleepSession) => {
+    const endTime = new Date()
+    const startMs = new Date(session.start_time).getTime()
+    let diffHours = (endTime.getTime() - startMs) / 3600000
+    if (diffHours < 0) diffHours += 24
+    const durationHours = Math.round(diffHours * 100) / 100
+
+    if (isDemo) {
+      setDemoSessions((prev) =>
+        prev.map((s) =>
+          s.id === session.id
+            ? { ...s, end_time: endTime.toISOString(), duration_hours: durationHours }
+            : s,
+        ),
+      )
+    } else {
+      await updateMutation.mutateAsync({
+        id: session.id,
+        babyId: babyId!,
+        updates: {
+          end_time: endTime.toISOString(),
+          duration_hours: durationHours,
+        },
+      })
+    }
+    toast.success(t('sleep.ended'))
   }
 
   const handleDelete = async (id: string) => {
@@ -158,6 +219,37 @@ export function SleepTrackerPage() {
         <h1 className="text-3xl font-bold">{t('sleep.title')}</h1>
         <p className="mt-2 text-muted-foreground">{t('sleep.subtitle')}</p>
       </div>
+
+      {/* Active Sleep Banner */}
+      {activeSleep && (
+        <Card className="border-violet-300 bg-violet-100">
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-violet-500" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-violet-800">{t('sleep.sleeping')}</p>
+                <p className="text-xs text-violet-600">
+                  {new Date(activeSleep.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {' — '}
+                  {formatElapsed(now - new Date(activeSleep.start_time).getTime())}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              className="bg-amber-500 hover:bg-amber-600 text-white rounded-full gap-1.5"
+              onClick={() => handleWakeUp(activeSleep)}
+              disabled={updateMutation.isPending}
+            >
+              <Sun className="size-4" />
+              {t('sleep.wakeUp')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Today's Summary */}
       <Card className="border-[#ddd6fe] bg-violet-50">
@@ -181,21 +273,38 @@ export function SleepTrackerPage() {
               <Label>{t('sleep.startTime')}</Label>
               <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
             </div>
+            {!stillSleeping && (
+              <div>
+                <Label>{t('sleep.endTime')}</Label>
+                <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              </div>
+            )}
+          </div>
+          {/* Still sleeping toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={stillSleeping}
+              onChange={(e) => setStillSleeping(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+            />
+            <span className="text-sm text-muted-foreground">{t('sleep.stillSleeping')}</span>
+          </label>
+          {!stillSleeping && (
             <div>
-              <Label>{t('sleep.endTime')}</Label>
-              <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              <Label>{t('sleep.duration')}: <span className="font-bold">{duration.toFixed(1)} {t('sleep.hours')}</span></Label>
             </div>
-          </div>
-          <div>
-            <Label>{t('sleep.duration')}: <span className="font-bold">{duration.toFixed(1)} {t('sleep.hours')}</span></Label>
-          </div>
+          )}
           <div>
             <Label>{t('sleep.notes')}</Label>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('sleep.notes')} />
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={handleAdd} disabled={duration <= 0}>
-              {t('sleep.add')}
+            <Button
+              onClick={handleAdd}
+              disabled={!stillSleeping && duration <= 0}
+            >
+              {stillSleeping ? t('sleep.startSleep') : t('sleep.add')}
             </Button>
             {!isDemo && (
               <VoiceInputButton
@@ -203,7 +312,12 @@ export function SleepTrackerPage() {
                 onParsed={(data) => {
                   const d = data as ParsedSleepData
                   if (d.start_time) setStartTime(formatDatetimeLocal(new Date(d.start_time)))
-                  if (d.end_time) setEndTime(formatDatetimeLocal(new Date(d.end_time)))
+                  if (d.end_time) {
+                    setEndTime(formatDatetimeLocal(new Date(d.end_time)))
+                    setStillSleeping(false)
+                  } else if (d.start_time && !d.end_time) {
+                    setStillSleeping(true)
+                  }
                   if (d.notes) setNotes(d.notes)
                 }}
               />
@@ -254,21 +368,45 @@ export function SleepTrackerPage() {
           ) : (
             <div className="space-y-2">
               {sessions.map((s) => (
-                <div key={s.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div key={s.id} className={`flex items-center justify-between rounded-lg border p-3 ${!s.end_time ? 'border-violet-200 bg-violet-50' : ''}`}>
                   <div>
                     <p className="text-sm font-medium">
-                      {new Date(s.start_time).toLocaleString()} &rarr; {new Date(s.end_time).toLocaleString()}
+                      {new Date(s.start_time).toLocaleString()}
+                      {s.end_time ? (
+                        <> &rarr; {new Date(s.end_time).toLocaleString()}</>
+                      ) : (
+                        <span className="ml-2 inline-flex items-center gap-1 text-violet-600">
+                          <span className="size-1.5 rounded-full bg-violet-500 animate-pulse" />
+                          {t('sleep.sleeping')}
+                        </span>
+                      )}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {s.duration_hours.toFixed(1)} {t('sleep.hours')}
+                      {s.end_time && s.duration_hours != null
+                        ? `${s.duration_hours.toFixed(1)} ${t('sleep.hours')}`
+                        : formatElapsed(now - new Date(s.start_time).getTime())}
                       {s.notes && ` - ${s.notes}`}
                     </p>
                   </div>
-                  {canDelete(s) && (
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {!s.end_time && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 text-amber-600 border-amber-200 hover:bg-amber-50"
+                        onClick={() => handleWakeUp(s)}
+                        disabled={updateMutation.isPending}
+                      >
+                        <Sun className="size-3.5" />
+                        {t('sleep.wakeUp')}
+                      </Button>
+                    )}
+                    {canDelete(s) && (
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

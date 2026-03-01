@@ -128,6 +128,13 @@ export const en = {
   'sleep.deleted': 'Sleep session deleted',
   'sleep.added': 'Sleep session logged',
   'sleep.overlap': 'This time overlaps with an existing sleep session.',
+  'sleep.stillSleeping': 'Still sleeping',
+  'sleep.startSleep': 'Start Sleep',
+  'sleep.wakeUp': 'Wake Up',
+  'sleep.sleeping': 'Sleeping...',
+  'sleep.alreadySleeping': 'Baby is already sleeping. End the current session first.',
+  'sleep.started': 'Sleep started',
+  'sleep.ended': 'Sleep ended',
 
   // Diaper Tracker
   'diaper.title': 'Diaper Tracker',

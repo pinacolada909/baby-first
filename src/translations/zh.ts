@@ -130,6 +130,13 @@ export const zh: Record<TranslationKey, string> = {
   'sleep.deleted': '睡眠记录已删除',
   'sleep.added': '睡眠记录已添加',
   'sleep.overlap': '此时间段与已有的睡眠记录重叠。',
+  'sleep.stillSleeping': '还在睡',
+  'sleep.startSleep': '开始睡眠',
+  'sleep.wakeUp': '醒了',
+  'sleep.sleeping': '睡眠中...',
+  'sleep.alreadySleeping': '宝宝正在睡觉，请先结束当前睡眠。',
+  'sleep.started': '睡眠已开始',
+  'sleep.ended': '睡眠已结束',
 
   // Diaper Tracker
   'diaper.title': '尿布追踪',
