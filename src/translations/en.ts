@@ -337,7 +337,8 @@ export const en = {
   'email.dailySummary': 'Daily Summary Email',
   'email.dailySummaryDesc': 'Automatically receive a daily summary of sleep, feeding, and diaper data via email',
   'email.sendTo': 'Emails will be sent to',
-  'email.sendTime': 'Sent daily at 8:00 PM PST with CSV attachments',
+  'email.sendTime': 'Sent daily at 8:00 PM in your selected timezone with CSV attachments',
+  'email.timezone': 'Timezone',
   'email.enabled': 'Daily summary email enabled',
   'email.disabled': 'Daily summary email disabled',
 

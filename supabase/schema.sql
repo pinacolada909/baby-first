@@ -520,6 +520,7 @@ CREATE TABLE public.email_preferences (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id               UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE UNIQUE,
   daily_summary_enabled BOOLEAN NOT NULL DEFAULT false,
+  timezone              TEXT NOT NULL DEFAULT 'America/Los_Angeles',
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

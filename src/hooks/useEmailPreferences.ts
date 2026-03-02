@@ -6,6 +6,7 @@ interface EmailPreference {
   id: string
   user_id: string
   daily_summary_enabled: boolean
+  timezone: string
   created_at: string
 }
 
@@ -35,21 +36,16 @@ export function useUpdateEmailPreferences() {
   const { user } = useAuth()
 
   return useMutation({
-    mutationFn: async (enabled: boolean) => {
+    mutationFn: async (params: { enabled?: boolean; timezone?: string }) => {
       if (!user) throw new Error('Not authenticated')
 
-      // Upsert the preference
+      const updates: Record<string, unknown> = { user_id: user.id }
+      if (params.enabled !== undefined) updates.daily_summary_enabled = params.enabled
+      if (params.timezone !== undefined) updates.timezone = params.timezone
+
       const { data, error } = await supabase
         .from('email_preferences')
-        .upsert(
-          {
-            user_id: user.id,
-            daily_summary_enabled: enabled,
-          },
-          {
-            onConflict: 'user_id',
-          }
-        )
+        .upsert(updates, { onConflict: 'user_id' })
         .select()
         .single()
 

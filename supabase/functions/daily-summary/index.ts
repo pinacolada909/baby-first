@@ -1,6 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'https://esm.sh/resend@2'
-// btoa is available globally in Deno
 
 const ALLOWED_ORIGINS = [
   'https://baby-first-iota.vercel.app',
@@ -15,20 +14,36 @@ function getCorsHeaders(req: Request) {
   }
 }
 
+// Encode a UTF-8 string to base64 (handles Chinese and other non-Latin1 characters)
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
 interface SleepSession {
+  baby_id: string
+  caregiver_id: string
   start_time: string
-  end_time: string
-  duration_hours: number
+  end_time: string | null
+  duration_hours: number | null
   notes: string | null
 }
 
 interface DiaperChange {
+  baby_id: string
+  caregiver_id: string
   changed_at: string
   status: string
   notes: string | null
 }
 
 interface Feeding {
+  baby_id: string
+  caregiver_id: string
   fed_at: string
   feeding_type: string
   volume_ml: number | null
@@ -37,6 +52,8 @@ interface Feeding {
 }
 
 interface PumpingSession {
+  baby_id: string
+  caregiver_id: string
   pumped_at: string
   duration_minutes: number | null
   volume_ml: number
@@ -45,10 +62,12 @@ interface PumpingSession {
   notes: string | null
 }
 
-function formatDate(isoString: string): string {
+type NameMap = Record<string, string>
+
+function formatDate(isoString: string, tz: string): string {
   const d = new Date(isoString)
   return d.toLocaleString('en-US', {
-    timeZone: 'America/Los_Angeles',
+    timeZone: tz,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -70,36 +89,86 @@ function escapeCSV(value: string | number | null): string {
   return str
 }
 
-function generateSleepCSV(sessions: SleepSession[]): string {
-  const header = 'Start Time,End Time,Duration (hours),Notes'
+function generateSleepCSV(
+  sessions: SleepSession[],
+  babyNames: NameMap,
+  caregiverNames: NameMap,
+  tz: string,
+): string {
+  const header = 'Baby,Logged By,Start Time,End Time,Duration (hours),Notes'
   const rows = sessions.map(s =>
-    `${escapeCSV(formatDate(s.start_time))},${escapeCSV(formatDate(s.end_time))},${s.duration_hours.toFixed(1)},${escapeCSV(s.notes)}`
+    [
+      escapeCSV(babyNames[s.baby_id] || 'Baby'),
+      escapeCSV(caregiverNames[s.caregiver_id] || 'Unknown'),
+      escapeCSV(formatDate(s.start_time, tz)),
+      s.end_time ? escapeCSV(formatDate(s.end_time, tz)) : 'Ongoing',
+      s.duration_hours != null ? s.duration_hours.toFixed(1) : '',
+      escapeCSV(s.notes),
+    ].join(',')
   )
-  return [header, ...rows].join('\n')
+  return '\uFEFF' + [header, ...rows].join('\n')
 }
 
-function generateDiaperCSV(changes: DiaperChange[]): string {
-  const header = 'Time,Type,Notes'
+function generateDiaperCSV(
+  changes: DiaperChange[],
+  babyNames: NameMap,
+  caregiverNames: NameMap,
+  tz: string,
+): string {
+  const header = 'Baby,Logged By,Time,Type,Notes'
   const rows = changes.map(d =>
-    `${escapeCSV(formatDate(d.changed_at))},${escapeCSV(d.status)},${escapeCSV(d.notes)}`
+    [
+      escapeCSV(babyNames[d.baby_id] || 'Baby'),
+      escapeCSV(caregiverNames[d.caregiver_id] || 'Unknown'),
+      escapeCSV(formatDate(d.changed_at, tz)),
+      escapeCSV(d.status),
+      escapeCSV(d.notes),
+    ].join(',')
   )
-  return [header, ...rows].join('\n')
+  return '\uFEFF' + [header, ...rows].join('\n')
 }
 
-function generateFeedingCSV(feedings: Feeding[]): string {
-  const header = 'Time,Type,Volume (mL),Duration (min),Notes'
+function generateFeedingCSV(
+  feedings: Feeding[],
+  babyNames: NameMap,
+  caregiverNames: NameMap,
+  tz: string,
+): string {
+  const header = 'Baby,Logged By,Time,Type,Volume (mL),Duration (min),Notes'
   const rows = feedings.map(f =>
-    `${escapeCSV(formatDate(f.fed_at))},${escapeCSV(f.feeding_type)},${escapeCSV(f.volume_ml)},${escapeCSV(f.duration_minutes)},${escapeCSV(f.notes)}`
+    [
+      escapeCSV(babyNames[f.baby_id] || 'Baby'),
+      escapeCSV(caregiverNames[f.caregiver_id] || 'Unknown'),
+      escapeCSV(formatDate(f.fed_at, tz)),
+      escapeCSV(f.feeding_type),
+      escapeCSV(f.volume_ml),
+      escapeCSV(f.duration_minutes),
+      escapeCSV(f.notes),
+    ].join(',')
   )
-  return [header, ...rows].join('\n')
+  return '\uFEFF' + [header, ...rows].join('\n')
 }
 
-function generatePumpingCSV(sessions: PumpingSession[]): string {
-  const header = 'Time,Duration (min),Volume (mL),Side,Storage,Notes'
+function generatePumpingCSV(
+  sessions: PumpingSession[],
+  babyNames: NameMap,
+  caregiverNames: NameMap,
+  tz: string,
+): string {
+  const header = 'Baby,Logged By,Time,Duration (min),Volume (mL),Side,Storage,Notes'
   const rows = sessions.map(s =>
-    `${escapeCSV(formatDate(s.pumped_at))},${escapeCSV(s.duration_minutes)},${s.volume_ml},${escapeCSV(s.side)},${escapeCSV(s.storage)},${escapeCSV(s.notes)}`
+    [
+      escapeCSV(babyNames[s.baby_id] || 'Baby'),
+      escapeCSV(caregiverNames[s.caregiver_id] || 'Unknown'),
+      escapeCSV(formatDate(s.pumped_at, tz)),
+      escapeCSV(s.duration_minutes),
+      s.volume_ml,
+      escapeCSV(s.side),
+      escapeCSV(s.storage),
+      escapeCSV(s.notes),
+    ].join(',')
   )
-  return [header, ...rows].join('\n')
+  return '\uFEFF' + [header, ...rows].join('\n')
 }
 
 Deno.serve(async (req) => {
@@ -132,10 +201,10 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const resend = new Resend(resendApiKey)
 
-    // Get all users who have enabled daily summary
+    // Get all users who have enabled daily summary (include timezone)
     const { data: preferences, error: prefError } = await supabase
       .from('email_preferences')
-      .select('user_id')
+      .select('user_id, timezone')
       .eq('daily_summary_enabled', true)
 
     if (prefError) {
@@ -148,27 +217,27 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Summary window: 8:00 PM PST/PDT yesterday to 7:59 PM PST/PDT today
-    // Using America/Los_Angeles handles DST automatically
-    const now = new Date()
-    const pstNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }))
-    const pstDateStr = `${pstNow.getFullYear()}-${String(pstNow.getMonth() + 1).padStart(2, '0')}-${String(pstNow.getDate()).padStart(2, '0')}`
-
-    // End: today at 8:00 PM Pacific (the cron fires around this time)
-    const todayEnd = new Date(`${pstDateStr}T20:00:00`)
-    // Compute the actual Pacific UTC offset for this date to convert to UTC
-    const pacificOffset = now.getTime() - pstNow.getTime()
-    const endUTC = new Date(todayEnd.getTime() + pacificOffset)
-    // Start: 24 hours before end
-    const startUTC = new Date(endUTC.getTime() - 24 * 60 * 60 * 1000)
-
-    const todayStartISO = startUTC.toISOString()
-    const todayEndISO = endUTC.toISOString()
-
     const results: { userId: string; success: boolean; error?: string }[] = []
 
     for (const pref of preferences) {
       try {
+        const timezone = pref.timezone || 'America/Los_Angeles'
+
+        // Compute 24-hour summary window in the user's timezone
+        const now = new Date()
+        const userNow = new Date(now.toLocaleString('en-US', { timeZone: timezone }))
+        const userDateStr = `${userNow.getFullYear()}-${String(userNow.getMonth() + 1).padStart(2, '0')}-${String(userNow.getDate()).padStart(2, '0')}`
+
+        // End: today at 8:00 PM in the user's timezone
+        const userEnd = new Date(`${userDateStr}T20:00:00`)
+        const userOffset = now.getTime() - userNow.getTime()
+        const endUTC = new Date(userEnd.getTime() + userOffset)
+        // Start: 24 hours before end
+        const startUTC = new Date(endUTC.getTime() - 24 * 60 * 60 * 1000)
+
+        const todayStartISO = startUTC.toISOString()
+        const todayEndISO = endUTC.toISOString()
+
         // Get user's email from auth
         const { data: userData, error: userError } = await supabase.auth.admin.getUserById(pref.user_id)
         if (userError || !userData.user?.email) {
@@ -189,34 +258,55 @@ Deno.serve(async (req) => {
         }
 
         const babyIds = caregivers.map(c => c.baby_id)
-        const babyNames = caregivers.map(c => (c.babies as { name: string })?.name || 'Baby').join(', ')
+        const babyNameStr = caregivers.map(c => (c.babies as { name: string })?.name || 'Baby').join(', ')
 
-        // Fetch today's data for all babies
+        // Build baby name lookup map
+        const babyNameMap: NameMap = {}
+        for (const c of caregivers) {
+          babyNameMap[c.baby_id] = (c.babies as { name: string })?.name || 'Baby'
+        }
+
+        // Build caregiver name lookup map (all caregivers for these babies)
+        const { data: allCaregivers } = await supabase
+          .from('baby_caregivers')
+          .select('user_id, display_name')
+          .in('baby_id', babyIds)
+
+        const caregiverNameMap: NameMap = {}
+        if (allCaregivers) {
+          for (const cg of allCaregivers) {
+            if (!caregiverNameMap[cg.user_id]) {
+              caregiverNameMap[cg.user_id] = cg.display_name || 'Caregiver'
+            }
+          }
+        }
+
+        // Fetch today's data for all babies (include baby_id + caregiver_id)
         const [sleepResult, diaperResult, feedingResult, pumpingResult] = await Promise.all([
           supabase
             .from('sleep_sessions')
-            .select('start_time, end_time, duration_hours, notes')
+            .select('baby_id, caregiver_id, start_time, end_time, duration_hours, notes')
             .in('baby_id', babyIds)
             .gte('start_time', todayStartISO)
             .lt('start_time', todayEndISO)
             .order('start_time', { ascending: true }),
           supabase
             .from('diaper_changes')
-            .select('changed_at, status, notes')
+            .select('baby_id, caregiver_id, changed_at, status, notes')
             .in('baby_id', babyIds)
             .gte('changed_at', todayStartISO)
             .lt('changed_at', todayEndISO)
             .order('changed_at', { ascending: true }),
           supabase
             .from('feedings')
-            .select('fed_at, feeding_type, volume_ml, duration_minutes, notes')
+            .select('baby_id, caregiver_id, fed_at, feeding_type, volume_ml, duration_minutes, notes')
             .in('baby_id', babyIds)
             .gte('fed_at', todayStartISO)
             .lt('fed_at', todayEndISO)
             .order('fed_at', { ascending: true }),
           supabase
             .from('pumping_sessions')
-            .select('pumped_at, duration_minutes, volume_ml, side, storage, notes')
+            .select('baby_id, caregiver_id, pumped_at, duration_minutes, volume_ml, side, storage, notes')
             .in('baby_id', babyIds)
             .gte('pumped_at', todayStartISO)
             .lt('pumped_at', todayEndISO)
@@ -228,34 +318,34 @@ Deno.serve(async (req) => {
         const feedingData = (feedingResult.data || []) as Feeding[]
         const pumpingData = (pumpingResult.data || []) as PumpingSession[]
 
-        // Generate CSVs
-        const sleepCSV = generateSleepCSV(sleepData)
-        const diaperCSV = generateDiaperCSV(diaperData)
-        const feedingCSV = generateFeedingCSV(feedingData)
-        const pumpingCSV = generatePumpingCSV(pumpingData)
+        // Generate CSVs with baby name, caregiver name, and user timezone
+        const sleepCSV = generateSleepCSV(sleepData, babyNameMap, caregiverNameMap, timezone)
+        const diaperCSV = generateDiaperCSV(diaperData, babyNameMap, caregiverNameMap, timezone)
+        const feedingCSV = generateFeedingCSV(feedingData, babyNameMap, caregiverNameMap, timezone)
+        const pumpingCSV = generatePumpingCSV(pumpingData, babyNameMap, caregiverNameMap, timezone)
 
-        // Calculate summary stats
-        const totalSleepHours = sleepData.reduce((sum, s) => sum + s.duration_hours, 0)
+        // Calculate summary stats (handle null duration_hours for ongoing sleep)
+        const totalSleepHours = sleepData.reduce((sum, s) => sum + (s.duration_hours ?? 0), 0)
         const totalFeedings = feedingData.length
         const totalDiapers = diaperData.length
         const totalVolume = feedingData.reduce((sum, f) => sum + (f.volume_ml || 0), 0)
         const totalPumping = pumpingData.length
         const totalPumpedMl = pumpingData.reduce((sum, p) => sum + p.volume_ml, 0)
 
-        const dateStr = pstNow.toLocaleDateString('en-US', {
+        const dateStr = userNow.toLocaleDateString('en-US', {
           weekday: 'long',
           year: 'numeric',
           month: 'long',
           day: 'numeric'
         })
 
-        // Send email with Resend
+        // Send email with Resend (use utf8ToBase64 for Chinese text support)
         const { error: emailError } = await resend.emails.send({
           from: 'BabyStep <onboarding@resend.dev>',
           to: userEmail,
-          subject: `Daily Summary for ${babyNames} - ${dateStr}`,
+          subject: `Daily Summary for ${babyNameStr} - ${dateStr}`,
           html: `
-            <h1>Daily Summary for ${babyNames}</h1>
+            <h1>Daily Summary for ${babyNameStr}</h1>
             <p><strong>Date:</strong> ${dateStr}</p>
 
             <h2>Summary</h2>
@@ -276,19 +366,19 @@ Deno.serve(async (req) => {
           attachments: [
             {
               filename: 'sleep_summary.csv',
-              content: btoa(sleepCSV),
+              content: utf8ToBase64(sleepCSV),
             },
             {
               filename: 'diaper_summary.csv',
-              content: btoa(diaperCSV),
+              content: utf8ToBase64(diaperCSV),
             },
             {
               filename: 'feeding_summary.csv',
-              content: btoa(feedingCSV),
+              content: utf8ToBase64(feedingCSV),
             },
             {
               filename: 'pumping_summary.csv',
-              content: btoa(pumpingCSV),
+              content: utf8ToBase64(pumpingCSV),
             },
           ],
         })
