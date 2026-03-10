@@ -159,6 +159,7 @@ export const zh: Record<TranslationKey, string> = {
   'diaper.deleted': '尿布记录已删除',
   'diaper.added': '尿布更换已记录',
   'diaper.overlap': '该时间已有尿布更换记录。',
+  'diaper.export': '下载 CSV',
 
   // Feeding Tracker
   'feeding.title': '喂养追踪',
@@ -186,6 +187,7 @@ export const zh: Record<TranslationKey, string> = {
   'feeding.deleted': '喂养记录已删除',
   'feeding.added': '喂养记录已添加',
   'feeding.overlap': '该时间已有喂养记录。',
+  'feeding.export': '下载 CSV',
   'feeding.ml': '毫升',
   'feeding.min': '分钟',
 

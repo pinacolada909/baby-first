@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Baby, Trash2 } from 'lucide-react'
+import { Baby, Trash2, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 function formatDatetimeLocal(date: Date): string {
@@ -112,6 +112,23 @@ export function DiaperTrackerPage() {
 
   const statusTranslation = (s: DiaperStatus) => t(`diaper.status.${s}` as `diaper.status.${'wet' | 'dirty' | 'mixed' | 'dry'}`)
 
+  const handleExportCSV = () => {
+    const header = ['Time', 'Status', 'Notes']
+    const rows = changes.map((c) => [
+      new Date(c.changed_at).toLocaleString(),
+      c.status,
+      c.notes ?? '',
+    ])
+    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `diaper-history-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -187,7 +204,15 @@ export function DiaperTrackerPage() {
       {/* History */}
       <Card>
         <CardContent className="p-6">
-          <h2 className="mb-4 text-lg font-semibold">{t('diaper.history')}</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">{t('diaper.history')}</h2>
+            {changes.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                <Download className="mr-2 h-4 w-4" />
+                {t('diaper.export')}
+              </Button>
+            )}
+          </div>
           {changes.length === 0 ? (
             <p className="py-4 text-center text-muted-foreground">{t('diaper.empty')}</p>
           ) : (
