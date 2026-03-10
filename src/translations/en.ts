@@ -157,6 +157,7 @@ export const en = {
   'diaper.deleted': 'Diaper change deleted',
   'diaper.added': 'Diaper change logged',
   'diaper.overlap': 'A diaper change already exists at this time.',
+  'diaper.export': 'Download CSV',
 
   // Feeding Tracker
   'feeding.title': 'Feeding Tracker',
@@ -184,6 +185,7 @@ export const en = {
   'feeding.deleted': 'Feeding deleted',
   'feeding.added': 'Feeding logged',
   'feeding.overlap': 'A feeding already exists at this time.',
+  'feeding.export': 'Download CSV',
   'feeding.ml': 'mL',
   'feeding.min': 'min',
 

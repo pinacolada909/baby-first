@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Utensils, Trash2 } from 'lucide-react'
+import { Utensils, Trash2, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
@@ -112,6 +112,25 @@ export function FeedingTrackerPage() {
   }, [feedings, period])
 
   const typeTranslation = (ft: FeedingType) => t(`feeding.type.${ft}` as `feeding.type.${'breastmilk' | 'formula' | 'ready_to_feed'}`)
+
+  const handleExportCSV = () => {
+    const header = ['Time', 'Type', 'Volume (mL)', 'Duration (min)', 'Notes']
+    const rows = feedings.map((f) => [
+      new Date(f.fed_at).toLocaleString(),
+      f.feeding_type,
+      f.volume_ml ?? '',
+      f.duration_minutes ?? '',
+      f.notes ?? '',
+    ])
+    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `feeding-history-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const handleAdd = async () => {
     const newTime = new Date(time).getTime()
@@ -323,7 +342,15 @@ export function FeedingTrackerPage() {
       {/* History */}
       <Card>
         <CardContent className="p-6">
-          <h2 className="mb-4 text-lg font-semibold">{t('feeding.history')}</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">{t('feeding.history')}</h2>
+            {feedings.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                <Download className="mr-2 h-4 w-4" />
+                {t('feeding.export')}
+              </Button>
+            )}
+          </div>
           {feedings.length === 0 ? (
             <p className="py-4 text-center text-muted-foreground">{t('feeding.empty')}</p>
           ) : (
