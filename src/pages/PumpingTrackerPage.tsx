@@ -146,15 +146,18 @@ export default function PumpingTrackerPage() {
       bucketFn = (d) => `${d.getMonth() + 1}/${d.getDate()}`
     }
 
-    const buckets = new Map<string, { fed_immediately: number; fridge: number; freezer: number }>()
+    const buckets = new Map<string, { date: Date; fed_immediately: number; fridge: number; freezer: number }>()
     for (const s of filtered) {
-      const key = bucketFn(new Date(s.pumped_at))
-      const bucket = buckets.get(key) ?? { fed_immediately: 0, fridge: 0, freezer: 0 }
+      const d = new Date(s.pumped_at)
+      const key = bucketFn(d)
+      const bucket = buckets.get(key) ?? { date: d, fed_immediately: 0, fridge: 0, freezer: 0 }
       bucket[s.storage] += s.volume_ml
       buckets.set(key, bucket)
     }
 
-    return Array.from(buckets.entries()).map(([name, data]) => ({ name, ...data }))
+    return Array.from(buckets.entries())
+      .sort(([, a], [, b]) => a.date.getTime() - b.date.getTime())
+      .map(([name, { fed_immediately, fridge, freezer }]) => ({ name, fed_immediately, fridge, freezer }))
   }, [sessions, period])
 
   // Handlers
