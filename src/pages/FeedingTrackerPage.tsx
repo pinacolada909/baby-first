@@ -93,22 +93,19 @@ export function FeedingTrackerPage() {
       startDate = new Date(now.getTime() - 30 * 86400000)
     }
     const filtered = feedings.filter((f) => new Date(f.fed_at) >= startDate)
-    const buckets: Record<string, { label: string; breastmilk: number; formula: number; ready_to_feed: number }> = {}
+    const buckets: Record<string, { label: string; date: Date; breastmilk: number; formula: number; ready_to_feed: number }> = {}
 
     filtered.forEach((f) => {
       const d = new Date(f.fed_at)
       const label = period === 'day'
         ? `${d.getHours()}:00`
         : `${d.getMonth() + 1}/${d.getDate()}`
-      if (!buckets[label]) buckets[label] = { label, breastmilk: 0, formula: 0, ready_to_feed: 0 }
+      if (!buckets[label]) buckets[label] = { label, date: d, breastmilk: 0, formula: 0, ready_to_feed: 0 }
       buckets[label][f.feeding_type] += f.volume_ml ?? 0
     })
-    return Object.values(buckets).sort((a, b) => {
-      if (period === 'day') {
-        return parseInt(a.label) - parseInt(b.label)
-      }
-      return a.label.localeCompare(b.label)
-    })
+    return Object.values(buckets)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map(({ label, breastmilk, formula, ready_to_feed }) => ({ label, breastmilk, formula, ready_to_feed }))
   }, [feedings, period])
 
   const typeTranslation = (ft: FeedingType) => t(`feeding.type.${ft}` as `feeding.type.${'breastmilk' | 'formula' | 'ready_to_feed'}`)
