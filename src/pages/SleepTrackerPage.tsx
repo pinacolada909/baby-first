@@ -202,7 +202,11 @@ export function SleepTrackerPage() {
             : s,
         ),
       )
-    } else {
+      toast.success(t('sleep.ended'))
+      return
+    }
+
+    try {
       await updateMutation.mutateAsync({
         id: session.id,
         babyId: babyId!,
@@ -211,8 +215,10 @@ export function SleepTrackerPage() {
           duration_hours: durationHours,
         },
       })
+      toast.success(t('sleep.ended'))
+    } catch {
+      toast.error(t('common.error'))
     }
-    toast.success(t('sleep.ended'))
   }
 
   const handleDelete = async (id: string) => {
