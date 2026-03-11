@@ -33,13 +33,13 @@ interface NavigationProps {
 
 const navLinks: { to: string; labelKey: TranslationKey; icon: typeof Home }[] = [
   { to: '/', labelKey: 'nav.home', icon: Home },
-  { to: '/questions', labelKey: 'nav.questions', icon: HelpCircle },
-  { to: '/sleep-tracker', labelKey: 'nav.sleep', icon: Moon },
   { to: '/diaper-tracker', labelKey: 'nav.diaper', icon: Baby },
   { to: '/feeding-tracker', labelKey: 'nav.feeding', icon: UtensilsCrossed },
-  { to: '/growth', labelKey: 'nav.growth', icon: Ruler },
   { to: '/pumping-tracker', labelKey: 'nav.pumping', icon: Droplets },
+  { to: '/sleep-tracker', labelKey: 'nav.sleep', icon: Moon },
+  { to: '/growth', labelKey: 'nav.growth', icon: Ruler },
   { to: '/time-management', labelKey: 'nav.time', icon: Clock },
+  { to: '/questions', labelKey: 'nav.questions', icon: HelpCircle },
 ]
 
 export function Navigation({ onOpenAuth }: NavigationProps) {
